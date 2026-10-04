@@ -1062,7 +1062,7 @@ export const STATES: State[] = [
         ],
       },
     ],
-  },,
+  },
 {
     "id": "mh",
     "name": "Maharashtra",
