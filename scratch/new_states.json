@@ -1,0 +1,1490 @@
+[
+  {
+    "id": "mh",
+    "name": "Maharashtra",
+    "districts": [
+      {
+        "id": "nashik",
+        "name": "Nashik",
+        "places": [
+          {
+            "id": "lasalgaon",
+            "name": "Lasalgaon Onion Mandi (Asia's Largest)"
+          },
+          {
+            "id": "pimpalgaon",
+            "name": "Pimpalgaon Baswant Tomato & Grape Hub"
+          },
+          {
+            "id": "nashik-city",
+            "name": "Nashik APMC Yard"
+          },
+          {
+            "id": "yeola",
+            "name": "Yeola Agro Market"
+          }
+        ]
+      },
+      {
+        "id": "pune",
+        "name": "Pune",
+        "places": [
+          {
+            "id": "gultekdi",
+            "name": "Gultekdi APMC Market Yard Pune"
+          },
+          {
+            "id": "manchar",
+            "name": "Manchar Potato & Onion Yard"
+          },
+          {
+            "id": "junnar",
+            "name": "Junnar Vegetable Hub"
+          },
+          {
+            "id": "baramati",
+            "name": "Baramati Agro Terminal"
+          }
+        ]
+      },
+      {
+        "id": "nagpur",
+        "name": "Nagpur",
+        "places": [
+          {
+            "id": "nagpur-cotton",
+            "name": "Kalamna Wholesale Market Yard (Nagpur)"
+          },
+          {
+            "id": "katol",
+            "name": "Katol Orange Mandi"
+          },
+          {
+            "id": "saoner",
+            "name": "Saoner Grain & Cotton Yard"
+          }
+        ]
+      },
+      {
+        "id": "mumbai-suburban",
+        "name": "Mumbai / Navi Mumbai",
+        "places": [
+          {
+            "id": "vashi-apmc",
+            "name": "Vashi Navi Mumbai Central APMC Terminal"
+          },
+          {
+            "id": "dadar-market",
+            "name": "Dadar Wholesale Flower & Produce Yard"
+          }
+        ]
+      },
+      {
+        "id": "kolhapur",
+        "name": "Kolhapur",
+        "places": [
+          {
+            "id": "kolhapur-jaggery",
+            "name": "Shahupuri Jaggery & Agro Mandi"
+          },
+          {
+            "id": "gadhinglaj",
+            "name": "Gadhinglaj Chilli & Grain Yard"
+          }
+        ]
+      },
+      {
+        "id": "solapur",
+        "name": "Solapur",
+        "places": [
+          {
+            "id": "solapur-pomegranate",
+            "name": "Solapur Pomegranate & Jowar Mandi"
+          },
+          {
+            "id": "karmala",
+            "name": "Karmala Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "ahmednagar",
+        "name": "Ahmednagar (Ahilyanagar)",
+        "places": [
+          {
+            "id": "rahata",
+            "name": "Rahata Pomegranate & Onion Market"
+          },
+          {
+            "id": "sangamner",
+            "name": "Sangamner Tomato & Vegetable Mandi"
+          }
+        ]
+      },
+      {
+        "id": "aurangabad",
+        "name": "Chhatrapati Sambhajinagar",
+        "places": [
+          {
+            "id": "jadhavwadi",
+            "name": "Jadhavwadi APMC Yard"
+          },
+          {
+            "id": "paithan",
+            "name": "Paithan Cotton & Sweet Lime Hub"
+          }
+        ]
+      },
+      {
+        "id": "amravati",
+        "name": "Amravati",
+        "places": [
+          {
+            "id": "amravati-cotton",
+            "name": "Amravati Cotton & Soybean Yard"
+          },
+          {
+            "id": "warud",
+            "name": "Warud Orange Capital Mandi"
+          }
+        ]
+      },
+      {
+        "id": "jalgaon",
+        "name": "Jalgaon",
+        "places": [
+          {
+            "id": "jalgaon-banana",
+            "name": "Jalgaon Golden Banana & Pulse Mandi"
+          },
+          {
+            "id": "raver",
+            "name": "Raver Banana Export Terminal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ka",
+    "name": "Karnataka",
+    "districts": [
+      {
+        "id": "bengaluru-urban",
+        "name": "Bengaluru Urban",
+        "places": [
+          {
+            "id": "yeshwanthpur",
+            "name": "Yeshwanthpur APMC Wholesale Yard"
+          },
+          {
+            "id": "binny-mill",
+            "name": "Binny Mill Vegetable Market"
+          },
+          {
+            "id": "singena-agrahara",
+            "name": "Singena Agrahara Fruit Terminal"
+          }
+        ]
+      },
+      {
+        "id": "kolar",
+        "name": "Kolar",
+        "places": [
+          {
+            "id": "kolar-tomato",
+            "name": "Kolar APMC Tomato Market (2nd Largest in Asia)"
+          },
+          {
+            "id": "malur",
+            "name": "Malur Vegetable Terminal"
+          },
+          {
+            "id": "srinivaspur",
+            "name": "Srinivaspur Mango Capital Mandi"
+          }
+        ]
+      },
+      {
+        "id": "hubballi-dharwad",
+        "name": "Dharwad / Hubballi",
+        "places": [
+          {
+            "id": "amaragol",
+            "name": "Amaragol APMC Yard Hubballi"
+          },
+          {
+            "id": "dharwad-market",
+            "name": "Dharwad Chilli & Pulse Market"
+          }
+        ]
+      },
+      {
+        "id": "mysuru",
+        "name": "Mysuru",
+        "places": [
+          {
+            "id": "bandipalya",
+            "name": "Bandipalya APMC Yard Mysuru"
+          },
+          {
+            "id": "nanjangud",
+            "name": "Nanjangud Banana & Paddy Yard"
+          }
+        ]
+      },
+      {
+        "id": "belagavi",
+        "name": "Belagavi",
+        "places": [
+          {
+            "id": "belagavi-vegetable",
+            "name": "Belagavi Central Vegetable & Jaggery Mandi"
+          },
+          {
+            "id": "bailhongal",
+            "name": "Bailhongal Cotton Yard"
+          }
+        ]
+      },
+      {
+        "id": "shivamogga",
+        "name": "Shivamogga",
+        "places": [
+          {
+            "id": "shivamogga-areca",
+            "name": "Shivamogga Arecanut & Paddy Yard"
+          },
+          {
+            "id": "sagar",
+            "name": "Sagar Spice Market"
+          }
+        ]
+      },
+      {
+        "id": "ballari",
+        "name": "Ballari",
+        "places": [
+          {
+            "id": "ballari-chilli",
+            "name": "Ballari Chilli & Cotton Market Yard"
+          },
+          {
+            "id": "hospet",
+            "name": "Hospet Banana & Agro Mandi"
+          }
+        ]
+      },
+      {
+        "id": "kalaburagi",
+        "name": "Kalaburagi (Gulbarga)",
+        "places": [
+          {
+            "id": "gulbarga-dal",
+            "name": "Nehru Gunj Red Gram (Tur Dal) Mandi"
+          },
+          {
+            "id": "sedam",
+            "name": "Sedam Pulse Yard"
+          }
+        ]
+      },
+      {
+        "id": "chikkamagaluru",
+        "name": "Chikkamagaluru",
+        "places": [
+          {
+            "id": "chikkamagaluru-coffee",
+            "name": "Chikkamagaluru Coffee & Pepper Yard"
+          },
+          {
+            "id": "tarikere",
+            "name": "Tarikere Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "davangere",
+        "name": "Davangere",
+        "places": [
+          {
+            "id": "davangere-maize",
+            "name": "Davangere Maize & Paddy Market"
+          },
+          {
+            "id": "harihar",
+            "name": "Harihar Agro Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "up",
+    "name": "Uttar Pradesh",
+    "districts": [
+      {
+        "id": "lucknow",
+        "name": "Lucknow",
+        "places": [
+          {
+            "id": "dubagga",
+            "name": "Dubagga Mandi Lucknow"
+          },
+          {
+            "id": "sitapur-road",
+            "name": "Naveen Galla Mandi Sitapur Road"
+          },
+          {
+            "id": "malihabad",
+            "name": "Malihabad Mango Mandi"
+          }
+        ]
+      },
+      {
+        "id": "agra",
+        "name": "Agra",
+        "places": [
+          {
+            "id": "khandari",
+            "name": "Khandari Potato & Vegetable Mandi"
+          },
+          {
+            "id": "fatehabad",
+            "name": "Fatehabad Agro Market Yard"
+          }
+        ]
+      },
+      {
+        "id": "kanpur-nagar",
+        "name": "Kanpur",
+        "places": [
+          {
+            "id": "chakeri",
+            "name": "Chakeri Grain & Pulse Mandi"
+          },
+          {
+            "id": "naubasta",
+            "name": "Naubasta Naveen Mandi Samiti"
+          }
+        ]
+      },
+      {
+        "id": "varanasi",
+        "name": "Varanasi",
+        "places": [
+          {
+            "id": "pahariya",
+            "name": "Pahariya Mandi Samiti Varanasi"
+          },
+          {
+            "id": "ramnagar",
+            "name": "Ramnagar Vegetable Yard"
+          }
+        ]
+      },
+      {
+        "id": "meerut",
+        "name": "Meerut",
+        "places": [
+          {
+            "id": "delhi-road",
+            "name": "Delhi Road Naveen Mandi Meerut"
+          },
+          {
+            "id": "mawana",
+            "name": "Mawana Sugarcane & Grain Yard"
+          }
+        ]
+      },
+      {
+        "id": "bareilly",
+        "name": "Bareilly",
+        "places": [
+          {
+            "id": "bareilly-mandi",
+            "name": "Bareilly Delapeer Mandi Samiti"
+          },
+          {
+            "id": "aonla",
+            "name": "Aonla Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "gorakhpur",
+        "name": "Gorakhpur",
+        "places": [
+          {
+            "id": "maheshra",
+            "name": "Maheshra Naveen Mandi Gorakhpur"
+          },
+          {
+            "id": "sahjanwa",
+            "name": "Sahjanwa Paddy Yard"
+          }
+        ]
+      },
+      {
+        "id": "aligarh",
+        "name": "Aligarh",
+        "places": [
+          {
+            "id": "dhani-mandi",
+            "name": "Aligarh Dhanipur Mandi Samiti"
+          },
+          {
+            "id": "khair",
+            "name": "Khair Wheat & Mustard Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gj",
+    "name": "Gujarat",
+    "districts": [
+      {
+        "id": "ahmedabad",
+        "name": "Ahmedabad",
+        "places": [
+          {
+            "id": "jamalpur",
+            "name": "Jamalpur APMC Wholesale Market"
+          },
+          {
+            "id": "vasna",
+            "name": "Vasna APMC Vegetable Terminal"
+          },
+          {
+            "id": "naroda",
+            "name": "Naroda Fruit & Grain Yard"
+          }
+        ]
+      },
+      {
+        "id": "surat",
+        "name": "Surat",
+        "places": [
+          {
+            "id": "sahara-darwaja",
+            "name": "Sardar Market Sahara Darwaja Surat"
+          },
+          {
+            "id": "katargam",
+            "name": "Katargam Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "rajkot",
+        "name": "Rajkot",
+        "places": [
+          {
+            "id": "rajkot-bedi",
+            "name": "Bedi APMC Yard Rajkot (Groundnut & Cotton)"
+          },
+          {
+            "id": "gondal",
+            "name": "Gondal APMC Chilli, Onion & Groundnut Mandi"
+          }
+        ]
+      },
+      {
+        "id": "mehsana",
+        "name": "Mehsana",
+        "places": [
+          {
+            "id": "unjha",
+            "name": "Unjha APMC (Asia's Largest Cumin & Isabgol Mandi)"
+          },
+          {
+            "id": "kadi",
+            "name": "Kadi Cotton & Cottonseed Yard"
+          }
+        ]
+      },
+      {
+        "id": "vadodara",
+        "name": "Vadodara",
+        "places": [
+          {
+            "id": "sayajipura",
+            "name": "Sayajipura APMC Market Yard"
+          },
+          {
+            "id": "padra",
+            "name": "Padra Vegetable & Pulse Hub"
+          }
+        ]
+      },
+      {
+        "id": "junagadh",
+        "name": "Junagadh",
+        "places": [
+          {
+            "id": "talala",
+            "name": "Talala Gir Kesar Mango Mandi"
+          },
+          {
+            "id": "junagadh-apmc",
+            "name": "Junagadh Groundnut & Wheat Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pb",
+    "name": "Punjab",
+    "districts": [
+      {
+        "id": "ludhiana",
+        "name": "Ludhiana",
+        "places": [
+          {
+            "id": "khanna",
+            "name": "Khanna Grain Market (Asia's Largest Grain Mandi)"
+          },
+          {
+            "id": "gill-road",
+            "name": "Gill Road Mandi Ludhiana"
+          },
+          {
+            "id": "samrala",
+            "name": "Samrala Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "amritsar",
+        "name": "Amritsar",
+        "places": [
+          {
+            "id": "bhagtanwala",
+            "name": "Bhagtanwala Grain & Basmati Mandi"
+          },
+          {
+            "id": "vallah",
+            "name": "Vallah Vegetable & Fruit Terminal"
+          }
+        ]
+      },
+      {
+        "id": "jalandhar",
+        "name": "Jalandhar",
+        "places": [
+          {
+            "id": "jalandhar-cantt",
+            "name": "Maqsudan APMC Wholesale Mandi"
+          },
+          {
+            "id": "nakodar",
+            "name": "Nakodar Potato & Maize Yard"
+          }
+        ]
+      },
+      {
+        "id": "bathinda",
+        "name": "Bathinda",
+        "places": [
+          {
+            "id": "bathinda-cotton",
+            "name": "Bathinda White Gold Cotton Mandi"
+          },
+          {
+            "id": "rampuraphul",
+            "name": "Rampura Phul Grain Market"
+          }
+        ]
+      },
+      {
+        "id": "patiala",
+        "name": "Patiala",
+        "places": [
+          {
+            "id": "nabha",
+            "name": "Nabha Grain & Paddy Yard"
+          },
+          {
+            "id": "samana",
+            "name": "Samana Wheat & Basmati Mandi"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hr",
+    "name": "Haryana",
+    "districts": [
+      {
+        "id": "karnal",
+        "name": "Karnal",
+        "places": [
+          {
+            "id": "karnal-basmati",
+            "name": "Karnal Basmati Rice Hub Mandi"
+          },
+          {
+            "id": "taraori",
+            "name": "Taraori International Basmati Yard"
+          },
+          {
+            "id": "gharaunda",
+            "name": "Gharaunda Vegetable Terminal"
+          }
+        ]
+      },
+      {
+        "id": "sirsa",
+        "name": "Sirsa",
+        "places": [
+          {
+            "id": "sirsa-cotton",
+            "name": "Sirsa Cotton & Wheat Mandi"
+          },
+          {
+            "id": "dabwali",
+            "name": "Mandi Dabwali Kinnow & Mustard Yard"
+          }
+        ]
+      },
+      {
+        "id": "hisar",
+        "name": "Hisar",
+        "places": [
+          {
+            "id": "hisar-grain",
+            "name": "Nai Anaj Mandi Hisar"
+          },
+          {
+            "id": "hansi",
+            "name": "Hansi Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "ambala",
+        "name": "Ambala",
+        "places": [
+          {
+            "id": "ambala-city",
+            "name": "Ambala City Anaj Mandi"
+          },
+          {
+            "id": "barara",
+            "name": "Barara Paddy Yard"
+          }
+        ]
+      },
+      {
+        "id": "gurugram",
+        "name": "Gurugram",
+        "places": [
+          {
+            "id": "khandsa",
+            "name": "Khandsa Mandi Gurugram"
+          },
+          {
+            "id": "sohna",
+            "name": "Sohna Grain & Mustard Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rj",
+    "name": "Rajasthan",
+    "districts": [
+      {
+        "id": "jaipur",
+        "name": "Jaipur",
+        "places": [
+          {
+            "id": "muhana",
+            "name": "Muhana Mandi Terminal (Jaipur)"
+          },
+          {
+            "id": "surajpole",
+            "name": "Surajpole Anaj Mandi"
+          },
+          {
+            "id": "chomu",
+            "name": "Chomu Vegetable & Groundnut Hub"
+          }
+        ]
+      },
+      {
+        "id": "kota",
+        "name": "Kota",
+        "places": [
+          {
+            "id": "bhamashah",
+            "name": "Bhamashah Krishi Upaj Mandi Kota"
+          },
+          {
+            "id": "ramganj-mandi",
+            "name": "Ramganj Mandi (Coriander Capital)"
+          }
+        ]
+      },
+      {
+        "id": "jodhpur",
+        "name": "Jodhpur",
+        "places": [
+          {
+            "id": "basni",
+            "name": "Basni Krishi Upaj Mandi"
+          },
+          {
+            "id": "mathania",
+            "name": "Mathania Red Chilli & Onion Hub"
+          }
+        ]
+      },
+      {
+        "id": "bikaner",
+        "name": "Bikaner",
+        "places": [
+          {
+            "id": "bikaner-moth",
+            "name": "Bikaner Moth Dal & Mustard Mandi"
+          },
+          {
+            "id": "nokha",
+            "name": "Nokha Peanut & Pulse Yard"
+          }
+        ]
+      },
+      {
+        "id": "sri-ganganagar",
+        "name": "Sri Ganganagar",
+        "places": [
+          {
+            "id": "ganganagar-kinnow",
+            "name": "Sri Ganganagar Kinnow & Wheat Yard"
+          },
+          {
+            "id": "padampur",
+            "name": "Padampur Cotton & Mustard Mandi"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mp",
+    "name": "Madhya Pradesh",
+    "districts": [
+      {
+        "id": "indore",
+        "name": "Indore",
+        "places": [
+          {
+            "id": "chhoithram",
+            "name": "Chhoithram Fruit & Vegetable Mandi"
+          },
+          {
+            "id": "laxmibai-nagar",
+            "name": "Laxmibai Nagar Grain & Soybean Mandi"
+          }
+        ]
+      },
+      {
+        "id": "bhopal",
+        "name": "Bhopal",
+        "places": [
+          {
+            "id": "karond",
+            "name": "Karond Krishi Upaj Mandi Bhopal"
+          },
+          {
+            "id": "bairagarh",
+            "name": "Bairagarh Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "mandsaur",
+        "name": "Mandsaur",
+        "places": [
+          {
+            "id": "mandsaur-garlic",
+            "name": "Mandsaur Garlic & Opium Mandi (National Hub)"
+          },
+          {
+            "id": "pipliya-mandi",
+            "name": "Pipliya Mandi Soybean & Spices Yard"
+          }
+        ]
+      },
+      {
+        "id": "neemuch",
+        "name": "Neemuch",
+        "places": [
+          {
+            "id": "neemuch-herbal",
+            "name": "Neemuch Medicinal Herb & Isabgol Mandi"
+          },
+          {
+            "id": "jawad",
+            "name": "Jawad Grain Yard"
+          }
+        ]
+      },
+      {
+        "id": "ujjain",
+        "name": "Ujjain",
+        "places": [
+          {
+            "id": "chimanganj",
+            "name": "Chimanganj Mandi Ujjain (Wheat & Gram)"
+          },
+          {
+            "id": "nagda",
+            "name": "Nagda Agro Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wb",
+    "name": "West Bengal",
+    "districts": [
+      {
+        "id": "kolkata",
+        "name": "Kolkata",
+        "places": [
+          {
+            "id": "koley-market",
+            "name": "Koley Market Wholesale Vegetable Hub"
+          },
+          {
+            "id": "postasta",
+            "name": "Posta Wholesale Spice & Grain Market"
+          },
+          {
+            "id": "mechua",
+            "name": "Mechua Fruit Market"
+          }
+        ]
+      },
+      {
+        "id": "darjeeling-siliguri",
+        "name": "Siliguri / Darjeeling",
+        "places": [
+          {
+            "id": "siliguri-regulated",
+            "name": "Siliguri Regulated Market (North Bengal Hub)"
+          },
+          {
+            "id": "matigara",
+            "name": "Matigara Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "purba-bardhaman",
+        "name": "Purba Bardhaman",
+        "places": [
+          {
+            "id": "bardhaman-rice",
+            "name": "Bardhaman Rice Bowl APMC Yard"
+          },
+          {
+            "id": "memari",
+            "name": "Memari Potato & Paddy Mandi"
+          }
+        ]
+      },
+      {
+        "id": "hooghly",
+        "name": "Hooghly",
+        "places": [
+          {
+            "id": "sheoraphuli",
+            "name": "Sheoraphuli Hat Wholesale Market"
+          },
+          {
+            "id": "tarakeswar",
+            "name": "Tarakeswar Potato Capital Mandi"
+          }
+        ]
+      },
+      {
+        "id": "nadia",
+        "name": "Nadia",
+        "places": [
+          {
+            "id": "krishnanagar",
+            "name": "Krishnanagar Vegetable & Jute Yard"
+          },
+          {
+            "id": "ranaghat",
+            "name": "Ranaghat Agro Market"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "br",
+    "name": "Bihar",
+    "districts": [
+      {
+        "id": "patna",
+        "name": "Patna",
+        "places": [
+          {
+            "id": "meenabazar",
+            "name": "Meena Bazar Gulzarbagh Mandi"
+          },
+          {
+            "id": "bazar-samiti-patna",
+            "name": "Bazar Samiti Musallahpur Hat"
+          }
+        ]
+      },
+      {
+        "id": "muzaffarpur",
+        "name": "Muzaffarpur",
+        "places": [
+          {
+            "id": "muzaffarpur-shahi-litchi",
+            "name": "Muzaffarpur Shahi Litchi & Maize Yard"
+          },
+          {
+            "id": "ahiyapur",
+            "name": "Ahiyapur Krishi Bazar"
+          }
+        ]
+      },
+      {
+        "id": "bhagalpur",
+        "name": "Bhagalpur",
+        "places": [
+          {
+            "id": "bhagalpur-zardalu",
+            "name": "Bhagalpur Zardalu Mango & Silk Yard"
+          },
+          {
+            "id": "kahalgaon",
+            "name": "Kahalgaon Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "purnia",
+        "name": "Purnia",
+        "places": [
+          {
+            "id": "gulabbagh",
+            "name": "Gulabbagh Mandi (Eastern India's Largest Maize Market)"
+          },
+          {
+            "id": "kasba",
+            "name": "Kasba Jute & Grain Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "or_state",
+    "name": "Odisha",
+    "districts": [
+      {
+        "id": "khordha-bhubaneswar",
+        "name": "Bhubaneswar / Khordha",
+        "places": [
+          {
+            "id": "aiginia",
+            "name": "Aiginia APMC Yard Bhubaneswar"
+          },
+          {
+            "id": "unit-1-market",
+            "name": "Unit-1 Haat Wholesale Vegetable Market"
+          }
+        ]
+      },
+      {
+        "id": "cuttack",
+        "name": "Cuttack",
+        "places": [
+          {
+            "id": "chhatra-bazar",
+            "name": "Chhatra Bazar Cuttack"
+          },
+          {
+            "id": "malgodown",
+            "name": "Malgodown Wholesale Pulse & Grain Mandi"
+          }
+        ]
+      },
+      {
+        "id": "sambalpur",
+        "name": "Sambalpur",
+        "places": [
+          {
+            "id": "khetrajpur",
+            "name": "Khetrajpur RMC Market Yard"
+          },
+          {
+            "id": "bargarh-canal",
+            "name": "Bargarh Rice & Vegetable Hub"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "as",
+    "name": "Assam",
+    "districts": [
+      {
+        "id": "kamrup-guwahati",
+        "name": "Kamrup Metropolitan / Guwahati",
+        "places": [
+          {
+            "id": "pamohi",
+            "name": "Pamohi Central Agricultural Market Guwahati"
+          },
+          {
+            "id": "fancy-bazar",
+            "name": "Machkhowa & Fancy Bazar Wholesale Terminal"
+          }
+        ]
+      },
+      {
+        "id": "cachar-silchar",
+        "name": "Cachar / Silchar",
+        "places": [
+          {
+            "id": "fatak-bazar",
+            "name": "Fatak Bazar Silchar"
+          }
+        ]
+      },
+      {
+        "id": "dibrugarh",
+        "name": "Dibrugarh",
+        "places": [
+          {
+            "id": "dibrugarh-market",
+            "name": "New Market Agro Yard Dibrugarh"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cg",
+    "name": "Chhattisgarh",
+    "districts": [
+      {
+        "id": "raipur",
+        "name": "Raipur",
+        "places": [
+          {
+            "id": "dumartarai",
+            "name": "Dumartarai Wholesale Mandi Raipur"
+          },
+          {
+            "id": "pandri",
+            "name": "Pandri Galla Mandi"
+          }
+        ]
+      },
+      {
+        "id": "durg",
+        "name": "Durg / Bhilai",
+        "places": [
+          {
+            "id": "durg-mandi",
+            "name": "Durg Krishi Upaj Mandi"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jh",
+    "name": "Jharkhand",
+    "districts": [
+      {
+        "id": "ranchi",
+        "name": "Ranchi",
+        "places": [
+          {
+            "id": "pandra",
+            "name": "Pandra Krishi Bazar Samiti Ranchi"
+          },
+          {
+            "id": "daily-market",
+            "name": "Daily Market Main Road Ranchi"
+          }
+        ]
+      },
+      {
+        "id": "jamshedpur",
+        "name": "East Singhbhum (Jamshedpur)",
+        "places": [
+          {
+            "id": "sakchi",
+            "name": "Sakchi & Parsudih Bazar Samiti"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hp",
+    "name": "Himachal Pradesh",
+    "districts": [
+      {
+        "id": "shimla",
+        "name": "Shimla",
+        "places": [
+          {
+            "id": "dhalli",
+            "name": "Dhalli Apple & Vegetable Mandi (Shimla)"
+          },
+          {
+            "id": "bhattakufer",
+            "name": "Bhattakufer Fruit Terminal"
+          }
+        ]
+      },
+      {
+        "id": "kullu",
+        "name": "Kullu",
+        "places": [
+          {
+            "id": "kullu-mandi",
+            "name": "Kullu Valley Apple & Fruit Yard"
+          },
+          {
+            "id": "bhuntar",
+            "name": "Bhuntar Agro Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "uk",
+    "name": "Uttarakhand",
+    "districts": [
+      {
+        "id": "dehradun",
+        "name": "Dehradun",
+        "places": [
+          {
+            "id": "niranjanpur",
+            "name": "Niranjanpur Mandi Dehradun"
+          },
+          {
+            "id": "rishikesh",
+            "name": "Rishikesh Agro Yard"
+          }
+        ]
+      },
+      {
+        "id": "udhamsingh-nagar",
+        "name": "Udham Singh Nagar",
+        "places": [
+          {
+            "id": "rudrapur",
+            "name": "Rudrapur Grain & Paddy Mandi"
+          },
+          {
+            "id": "kashipur",
+            "name": "Kashipur Agro Yard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ga",
+    "name": "Goa",
+    "districts": [
+      {
+        "id": "north-goa",
+        "name": "North Goa",
+        "places": [
+          {
+            "id": "mapusa",
+            "name": "Mapusa Friday Market & APMC Yard"
+          },
+          {
+            "id": "panaji",
+            "name": "Panaji Municipal Market"
+          }
+        ]
+      },
+      {
+        "id": "south-goa",
+        "name": "South Goa",
+        "places": [
+          {
+            "id": "margao",
+            "name": "Margao SGPDA Wholesale Fish & Agro Market"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jk",
+    "name": "Jammu and Kashmir",
+    "districts": [
+      {
+        "id": "srinagar",
+        "name": "Srinagar",
+        "places": [
+          {
+            "id": "parimpora",
+            "name": "Parimpora Fruit & Apple Mandi Srinagar"
+          }
+        ]
+      },
+      {
+        "id": "jammu",
+        "name": "Jammu",
+        "places": [
+          {
+            "id": "narwal",
+            "name": "Narwal Wholesale Fruit & Vegetable Mandi Jammu"
+          }
+        ]
+      },
+      {
+        "id": "sopore",
+        "name": "Baramulla (Sopore)",
+        "places": [
+          {
+            "id": "sopore-apple",
+            "name": "Sopore Apple Mandi (Asia's 2nd Largest Fruit Mandi)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dl",
+    "name": "Delhi (NCT)",
+    "districts": [
+      {
+        "id": "north-delhi",
+        "name": "North / West Delhi",
+        "places": [
+          {
+            "id": "azadpur",
+            "name": "Azadpur Mandi (Asia's Largest Wholesale Market)"
+          },
+          {
+            "id": "keshopur",
+            "name": "Keshopur Vegetable & Fruit Yard"
+          },
+          {
+            "id": "najafgarh",
+            "name": "Najafgarh Grain Mandi"
+          },
+          {
+            "id": "ghazipur",
+            "name": "Ghazipur Wholesale Fruit & Flower Market"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tr",
+    "name": "Tripura",
+    "districts": [
+      {
+        "id": "west-tripura",
+        "name": "West Tripura (Agartala)",
+        "places": [
+          {
+            "id": "maharajganj",
+            "name": "Maharajganj Bazar Agartala"
+          },
+          {
+            "id": "battala",
+            "name": "Battala Vegetable Terminal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "meghalaya",
+    "name": "Meghalaya",
+    "districts": [
+      {
+        "id": "east-khasi-hills",
+        "name": "East Khasi Hills (Shillong)",
+        "places": [
+          {
+            "id": "iewduh",
+            "name": "Iewduh (Bara Bazar) Shillong"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "manipur",
+    "name": "Manipur",
+    "districts": [
+      {
+        "id": "imphal-west",
+        "name": "Imphal West",
+        "places": [
+          {
+            "id": "ima-keithel",
+            "name": "Ima Keithel (Mother's Market) Imphal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nagaland",
+    "name": "Nagaland",
+    "districts": [
+      {
+        "id": "dimapur",
+        "name": "Dimapur",
+        "places": [
+          {
+            "id": "dimapur-market",
+            "name": "Dimapur Daily Organic Produce Market"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mizoram",
+    "name": "Mizoram",
+    "districts": [
+      {
+        "id": "aizawl",
+        "name": "Aizawl",
+        "places": [
+          {
+            "id": "bara-bazar-aizawl",
+            "name": "Bara Bazar Central Market Aizawl"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "arunachal",
+    "name": "Arunachal Pradesh",
+    "districts": [
+      {
+        "id": "papum-pare",
+        "name": "Papum Pare (Itanagar)",
+        "places": [
+          {
+            "id": "itanagar-market",
+            "name": "Ganga Market Itanagar"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sikkim",
+    "name": "Sikkim",
+    "districts": [
+      {
+        "id": "east-sikkim",
+        "name": "East Sikkim (Gangtok)",
+        "places": [
+          {
+            "id": "lal-bazar",
+            "name": "Lal Bazar Organic Agricultural Market Gangtok"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ch",
+    "name": "Chandigarh (UT)",
+    "districts": [
+      {
+        "id": "chandigarh-ut",
+        "name": "Chandigarh",
+        "places": [
+          {
+            "id": "sector-26",
+            "name": "Sector 26 Grain & Vegetable Market Chandigarh"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "py",
+    "name": "Puducherry (UT)",
+    "districts": [
+      {
+        "id": "puducherry-dist",
+        "name": "Puducherry",
+        "places": [
+          {
+            "id": "goubert-market",
+            "name": "Goubert Market Wholesale Yard Puducherry"
+          },
+          {
+            "id": "thattanchavady",
+            "name": "Thattanchavady Regulated Agricultural Market"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "an",
+    "name": "Andaman and Nicobar (UT)",
+    "districts": [
+      {
+        "id": "south-andaman",
+        "name": "South Andaman (Port Blair)",
+        "places": [
+          {
+            "id": "mohanpura",
+            "name": "Mohanpura Vegetable Market Port Blair"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ladakh",
+    "name": "Ladakh (UT)",
+    "districts": [
+      {
+        "id": "leh",
+        "name": "Leh",
+        "places": [
+          {
+            "id": "leh-market",
+            "name": "Leh Main Market Apricot & Agro Yard"
+          }
+        ]
+      }
+    ]
+  }
+]
