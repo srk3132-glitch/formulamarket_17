@@ -13,6 +13,8 @@ import {
   ShoppingBag,
   Menu,
   X,
+  Globe,
+  Check,
 } from "lucide-react";
 
 export function SiteHeader() {
@@ -23,9 +25,11 @@ export function SiteHeader() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [signInMenuOpen, setSignInMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const signInMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -36,10 +40,15 @@ export function SiteHeader() {
       if (signInMenuRef.current && !signInMenuRef.current.contains(event.target as Node)) {
         setSignInMenuOpen(false);
       }
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setLangMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const currentLangInfo = LANGS.find((l) => l.id === lang) || LANGS[0];
 
   return (
     <header className="relative z-20 mx-auto max-w-6xl px-5 pt-6">
@@ -376,23 +385,65 @@ export function SiteHeader() {
             </div>
           )}
 
-          {/* Language Selector */}
-          <div className="flex items-center gap-1 rounded-full border border-white/70 bg-white/55 p-0.5 backdrop-blur-xl">
-            {LANGS.map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => setLang(l.id)}
-                aria-pressed={lang === l.id}
-                className={
-                  lang === l.id
-                    ? "rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm"
-                    : "rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition hover:bg-white/70"
-                }
-              >
-                {l.label}
-              </button>
-            ))}
+          {/* Language Selector Dropdown */}
+          <div className="relative" ref={langMenuRef}>
+            <button
+              type="button"
+              onClick={() => setLangMenuOpen((prev) => !prev)}
+              aria-expanded={langMenuOpen}
+              className="flex items-center gap-1.5 rounded-full border border-white/70 bg-white/75 px-3 py-1.5 text-xs font-semibold text-brand-deep shadow-2xs backdrop-blur-xl transition hover:bg-white hover:border-brand/40"
+            >
+              <Globe className="size-3.5 text-brand" />
+              <span>{currentLangInfo.label}</span>
+              <span className="text-[10px] text-brand-deep/50 hidden md:inline">
+                ({currentLangInfo.englishLabel})
+              </span>
+              <ChevronDown
+                className={`size-3 text-brand transition-transform ${langMenuOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {langMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 max-h-80 overflow-y-auto rounded-2xl border border-white/80 bg-white/95 p-2 shadow-xl backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="px-2 py-1.5 border-b border-gray-100 mb-1 flex items-center justify-between">
+                  <p className="text-[11px] font-bold text-brand-deep">
+                    27 Indian Languages (27 भाषाएँ)
+                  </p>
+                  <span className="text-[10px] rounded-full bg-brand/10 px-1.5 py-0.5 font-semibold text-brand">
+                    Active: {currentLangInfo.label}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  {LANGS.map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => {
+                        setLang(l.id);
+                        setLangMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs transition ${
+                        lang === l.id
+                          ? "bg-brand text-white font-semibold shadow-2xs"
+                          : "text-brand-deep hover:bg-brand/10 hover:text-brand"
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="font-bold">{l.label}</span>
+                        <span
+                          className={`block text-[10px] truncate ${
+                            lang === l.id ? "text-white/80" : "text-brand-deep/50"
+                          }`}
+                        >
+                          {l.englishLabel}
+                        </span>
+                      </div>
+                      {lang === l.id && <Check className="size-3 text-white shrink-0 ml-1" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -463,6 +514,36 @@ export function SiteHeader() {
                 <Store className="size-3.5" />
                 <span>{t("buyerBadge")}</span>
               </button>
+            </div>
+            <div className="border-t border-brand-deep/10 pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold text-brand-deep/70 uppercase tracking-wider flex items-center gap-1">
+                  <Globe className="size-3 text-brand" />
+                  भाषा / Language ({LANGS.length})
+                </span>
+                <span className="text-[10px] font-semibold text-brand">
+                  Active: {currentLangInfo.label}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                {LANGS.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => {
+                      setLang(l.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                      lang === l.id
+                        ? "bg-brand text-white shadow-xs"
+                        : "border border-brand-deep/15 bg-white text-brand-deep hover:bg-brand/10"
+                    }`}
+                  >
+                    {l.label} <span className="text-[10px] opacity-70">({l.englishLabel})</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

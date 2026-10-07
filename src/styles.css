@@ -229,3 +229,11 @@
     transform: translateY(-1px) scale(0.99);
   }
 }
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
