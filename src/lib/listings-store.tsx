@@ -10,314 +10,119 @@ import {
 } from "react";
 import { getCropImage } from "@/lib/crop-images";
 import { getSupabase, getStoredSupabaseConfig } from "@/lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export { getCropImage };
+
+export type ListingStatus = "active" | "paused" | "sold" | "expired";
 
 export type Listing = {
   id: string;
   cropId: string;
+  crop?: string;
   quantity: number;
+  unit: string;
   price: number;
+  askPrice?: number;
   farmer: string;
+  farmerName?: string;
   phone: string;
   stateId: string;
+  state?: string;
   districtId: string;
+  district?: string;
   placeId: string;
   placeName: string;
+  mandi?: string;
   distanceKm: number;
+  status: ListingStatus;
   createdAt?: string;
+  expiresAt?: string;
+  farmerId?: string;
   isRealtimeNew?: boolean;
 };
 
-// Database row mapping helper
-export function mapDbToListing(row: Record<string, any>): Listing {
+// Database row mapping helper supporting both standard and legacy schemas
+export function mapDbToListing(row: Record<string, unknown>): Listing {
+  const crop = String(row.crop || row.crop_id || row.cropId || "tomato");
+  const state = String(row.state || row.state_id || row.stateId || "tn");
+  const district = String(row.district || row.district_id || row.districtId || "");
+  const mandi = String(row.mandi || row.place_name || row.placeName || "");
+  const farmer = String(row.farmer_name || row.farmer || "Farmer");
+  const price = Number(row.ask_price ?? row.price ?? 0);
+  const quantity = Number(row.quantity ?? 1);
+  const unit = String(row.unit || "quintal");
+  const status: ListingStatus = (row.status as ListingStatus) || "active";
+
   return {
     id: String(row.id || `lst_${Date.now()}`),
-    cropId: String(row.crop_id || row.cropId || "tomato"),
-    quantity: Number(row.quantity) || 1,
-    price: Number(row.price) || 0,
-    farmer: String(row.farmer || "Farmer"),
-    phone: String(row.phone || "+91"),
-    stateId: String(row.state_id || row.stateId || "tn"),
-    districtId: String(row.district_id || row.districtId || ""),
-    placeId: String(row.place_id || row.placeId || ""),
-    placeName: String(row.place_name || row.placeName || ""),
-    distanceKm: Number(row.distance_km ?? row.distanceKm ?? 5),
-    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+    cropId: crop,
+    crop,
+    quantity,
+    unit,
+    price,
+    askPrice: price,
+    farmer,
+    farmerName: farmer,
+    phone: String(row.phone || ""),
+    stateId: state,
+    state,
+    districtId: district,
+    district,
+    placeId: String(row.place_id || mandi.toLowerCase().replace(/\s+/g, "-")),
+    placeName: mandi,
+    mandi,
+    distanceKm: Number(row.distance_km ?? 5),
+    status,
+    createdAt: row.created_at || new Date().toISOString(),
+    expiresAt: row.expires_at,
+    farmerId: row.farmer_id,
+    isRealtimeNew: Boolean(row.isRealtimeNew),
   };
 }
 
-export function mapListingToDb(l: Omit<Listing, "id" | "distanceKm">) {
-  return {
-    id: `lst_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    crop_id: l.cropId,
-    quantity: l.quantity,
-    price: l.price,
-    farmer: l.farmer,
-    phone: l.phone,
-    state_id: l.stateId,
-    district_id: l.districtId,
-    place_id: l.placeId,
-    place_name: l.placeName,
-    distance_km: Math.round(1 + Math.random() * 9),
-    created_at: new Date().toISOString(),
-  };
-}
+export type RealtimeStatus = "connected" | "connecting" | "offline";
 
-export const SEED: Listing[] = [
-  {
-    id: "l1",
-    cropId: "tomato",
-    quantity: 1,
-    price: 2140,
-    farmer: "Ravi Farms",
-    phone: "+91 98400 11223",
-    stateId: "tn",
-    districtId: "coimbatore",
-    placeId: "kurumbapakkam",
-    placeName: "Kurumbapakkam",
-    distanceKm: 2,
-  },
-  {
-    id: "l2",
-    cropId: "onion",
-    quantity: 5,
-    price: 1480,
-    farmer: "Sulochana Co-op",
-    phone: "+91 94430 55110",
-    stateId: "tn",
-    districtId: "madurai",
-    placeId: "usilampatti",
-    placeName: "Usilampatti Market Yard",
-    distanceKm: 34,
-  },
-  {
-    id: "l3",
-    cropId: "chilli",
-    quantity: 2,
-    price: 14600,
-    farmer: "Prakash Gardens",
-    phone: "+91 90030 77441",
-    stateId: "ap",
-    districtId: "guntur",
-    placeId: "guntur-market",
-    placeName: "Guntur Mirchi Yard (Asia's Largest)",
-    distanceKm: 58,
-  },
-  {
-    id: "l4",
-    cropId: "turmeric",
-    quantity: 12,
-    price: 8100,
-    farmer: "Anjaneyulu N.",
-    phone: "+91 99590 22087",
-    stateId: "ts",
-    districtId: "nizamabad",
-    placeId: "nizamabad-yard",
-    placeName: "Nizamabad APMC Turmeric Yard",
-    distanceKm: 11,
-  },
-  {
-    id: "l5",
-    cropId: "pepper",
-    quantity: 1,
-    price: 57500,
-    farmer: "Maravoor Estate",
-    phone: "+91 97440 31298",
-    stateId: "kl",
-    districtId: "kottayam",
-    placeId: "maravoor",
-    placeName: "Maravoor Estate Yard",
-    distanceKm: 7,
-  },
-  {
-    id: "l6",
-    cropId: "rice",
-    quantity: 30,
-    price: 4290,
-    farmer: "Attur Farmer Group",
-    phone: "+91 93450 66120",
-    stateId: "tn",
-    districtId: "salem",
-    placeId: "attur",
-    placeName: "Attur Sago & Tapioca Mandi",
-    distanceKm: 21,
-  },
-  {
-    id: "l7",
-    cropId: "banana",
-    quantity: 15,
-    price: 1820,
-    farmer: "Kaveri River Orchards",
-    phone: "+91 98421 33445",
-    stateId: "tn",
-    districtId: "coimbatore",
-    placeId: "pollachi",
-    placeName: "Pollachi Coconut & Veg Mandi",
-    distanceKm: 8,
-  },
-  {
-    id: "l8",
-    cropId: "mango",
-    quantity: 25,
-    price: 4400,
-    farmer: "Sri Balaji Mango Grove",
-    phone: "+91 99402 77112",
-    stateId: "ap",
-    districtId: "chittoor",
-    placeId: "chittoor-market",
-    placeName: "Chittoor Mango & Jaggery Market",
-    distanceKm: 42,
-  },
-  {
-    id: "l9",
-    cropId: "tomato",
-    quantity: 18,
-    price: 2180,
-    farmer: "Madanapalle Red Gold Producers",
-    phone: "+91 99890 55432",
-    stateId: "ap",
-    districtId: "chittoor",
-    placeId: "madanapalle",
-    placeName: "Madanapalle Tomato Mandi",
-    distanceKm: 15,
-  },
-  {
-    id: "l10",
-    cropId: "carrot",
-    quantity: 12,
-    price: 3050,
-    farmer: "Ooty Valley Greens",
-    phone: "+91 98403 44556",
-    stateId: "tn",
-    districtId: "nilgiris",
-    placeId: "ooty",
-    placeName: "Udhagamandalam (Ooty) Vegetable Yard",
-    distanceKm: 14,
-  },
-  {
-    id: "l11",
-    cropId: "pomegranate",
-    quantity: 8,
-    price: 9400,
-    farmer: "Deccan Fruit Producers",
-    phone: "+91 98850 66778",
-    stateId: "ts",
-    districtId: "rangareddy",
-    placeId: "bowenpally",
-    placeName: "Bowenpally Wholesale Veg Mandi",
-    distanceKm: 32,
-  },
-  {
-    id: "l12",
-    cropId: "pineapple",
-    quantity: 20,
-    price: 3150,
-    farmer: "Vazhakulam Pineapple Growers",
-    phone: "+91 94470 88211",
-    stateId: "kl",
-    districtId: "ernakulam",
-    placeId: "muvattupuzha",
-    placeName: "Muvattupuzha Vazhakulam Pineapple Market",
-    distanceKm: 18,
-  },
-  {
-    id: "l13",
-    cropId: "cotton",
-    quantity: 35,
-    price: 7100,
-    farmer: "Enumamula Cotton Rythu Sangham",
-    phone: "+91 98490 33412",
-    stateId: "ts",
-    districtId: "warangal",
-    placeId: "enumamula",
-    placeName: "Enumamula Market Yard",
-    distanceKm: 9,
-  },
-  {
-    id: "l14",
-    cropId: "pepper",
-    quantity: 4,
-    price: 58200,
-    farmer: "Wayanad Highland Spice Estate",
-    phone: "+91 97451 22904",
-    stateId: "kl",
-    districtId: "wayanad",
-    placeId: "sulthan-bathery",
-    placeName: "Sulthan Bathery Coffee & Pepper Yard",
-    distanceKm: 25,
-  },
-];
-
-type RealtimeStatus = "connected" | "connecting" | "offline" | "ready";
-
-type ListingsContextValue = {
+interface ListingsContextValue {
   listings: Listing[];
-  addListing: (l: Omit<Listing, "id" | "distanceKm">) => Promise<Listing>;
+  isLoading: boolean;
+  error: string | null;
+  addListing: (l: {
+    cropId: string;
+    quantity: number;
+    unit?: string;
+    price: number;
+    farmer: string;
+    phone: string;
+    stateId: string;
+    districtId: string;
+    placeId?: string;
+    placeName: string;
+    farmerId?: string;
+    status?: ListingStatus;
+  }) => Promise<Listing>;
   realtimeStatus: RealtimeStatus;
   isSupabaseReady: boolean;
   latestNewListing: Listing | null;
   newListingAlertCount: number;
   clearLatestListing: () => void;
   refreshListings: () => Promise<void>;
-};
+}
 
 const ListingsContext = createContext<ListingsContextValue | null>(null);
 
 export function ListingsProvider({ children }: { children: ReactNode }) {
   const [dbListings, setDbListings] = useState<Listing[]>([]);
-  const [localAdded, setLocalAdded] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("connecting");
   const [isSupabaseReady, setIsSupabaseReady] = useState<boolean>(false);
   const [latestNewListing, setLatestNewListing] = useState<Listing | null>(null);
   const [newListingAlertCount, setNewListingAlertCount] = useState<number>(0);
 
-  const localBroadcastRef = useRef<BroadcastChannel | null>(null);
-  const supabaseChannelRef = useRef<any>(null);
+  const supabaseChannelRef = useRef<RealtimeChannel | null>(null);
 
-  // Load offline / cached listings from localStorage
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem("kb-listings");
-      if (raw) {
-        setLocalAdded(JSON.parse(raw) as Listing[]);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  // Multi-tab real-time sync via BroadcastChannel (works instantly across all local tabs)
-  useEffect(() => {
-    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
-
-    try {
-      const bc = new BroadcastChannel("fm_realtime_listings");
-      localBroadcastRef.current = bc;
-
-      bc.onmessage = (event) => {
-        const { type, listing } = event.data || {};
-        if (type === "NEW_LISTING" && listing) {
-          const item: Listing = { ...listing, isRealtimeNew: true };
-          setDbListings((prev) => {
-            if (prev.some((x) => x.id === item.id)) return prev;
-            return [item, ...prev];
-          });
-          setLatestNewListing(item);
-          setNewListingAlertCount((c) => c + 1);
-        }
-      };
-
-      return () => {
-        bc.close();
-      };
-    } catch (err) {
-      console.warn("BroadcastChannel not supported", err);
-    }
-  }, []);
-
-  // Fetch from Supabase and subscribe to Realtime postgres_changes
+  // Fetch listings from Supabase (shared centralized database)
   const fetchSupabaseListings = useCallback(async () => {
     const supabase = getSupabase();
     const config = getStoredSupabaseConfig();
@@ -325,33 +130,67 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
 
     if (!supabase || !config.isConfigured) {
       setRealtimeStatus("offline");
+      setIsLoading(false);
       return;
     }
 
     try {
-      setRealtimeStatus("connecting");
-      const { data, error } = await supabase
-        .from("listings")
+      // 1. Try public_listings view first (which filters active & unexpired)
+      let { data, error: queryErr } = await supabase
+        .from("public_listings")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(100);
 
-      if (error) {
-        console.warn("Supabase listings query notice:", error.message);
+      // 2. If view does not exist yet, fallback to listings table
+      if (queryErr || !data) {
+        const fallbackRes = await supabase
+          .from("listings")
+          .select("*")
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (!fallbackRes.error && fallbackRes.data) {
+          data = fallbackRes.data;
+          queryErr = null;
+        } else if (fallbackRes.error) {
+          // 3. Fallback for older schema without status column
+          const legacyRes = await supabase
+            .from("listings")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(100);
+
+          if (!legacyRes.error && legacyRes.data) {
+            data = legacyRes.data;
+            queryErr = null;
+          } else {
+            queryErr = fallbackRes.error;
+          }
+        }
+      }
+
+      if (queryErr) {
+        console.warn("[Supabase listings query error]:", queryErr.message);
+        setError(queryErr.message);
         setRealtimeStatus("offline");
-      } else if (data && data.length > 0) {
-        const mapped = data.map((d: any) => mapDbToListing(d));
+      } else if (data) {
+        const mapped = data.map((d: Record<string, unknown>) => mapDbToListing(d));
         setDbListings(mapped);
-        setRealtimeStatus("connected");
-      } else {
+        setError(null);
         setRealtimeStatus("connected");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.warn("Failed to fetch listings from Supabase:", err);
+      setError(err instanceof Error ? err.message : "Failed to load listings");
       setRealtimeStatus("offline");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
+  // Set up Realtime subscription + 15s fallback polling + tab focus refetch
   useEffect(() => {
     fetchSupabaseListings();
 
@@ -362,21 +201,37 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
 
     try {
       const channel = supabase
-        .channel("realtime-listings-feed")
+        .channel("realtime-shared-listings")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "listings" },
           (payload) => {
-            const newListing: Listing = {
-              ...mapDbToListing(payload.new),
-              isRealtimeNew: true,
-            };
-            setDbListings((prev) => {
-              if (prev.some((x) => x.id === newListing.id)) return prev;
-              return [newListing, ...prev];
-            });
-            setLatestNewListing(newListing);
-            setNewListingAlertCount((c) => c + 1);
+            const newRow = payload.new;
+            if (newRow && (!newRow.status || newRow.status === "active")) {
+              const newListing = mapDbToListing({
+                ...newRow,
+                isRealtimeNew: true,
+              });
+              setDbListings((prev) => {
+                if (prev.some((x) => x.id === newListing.id)) return prev;
+                return [newListing, ...prev];
+              });
+              setLatestNewListing(newListing);
+              setNewListingAlertCount((c) => c + 1);
+            }
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "listings" },
+          (payload) => {
+            const updatedRow = payload.new;
+            if (updatedRow) {
+              const updated = mapDbToListing(updatedRow);
+              setDbListings((prev) =>
+                prev.map((item) => (item.id === updated.id ? updated : item)),
+              );
+            }
           },
         )
         .on(
@@ -389,10 +244,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         )
         .on("broadcast", { event: "new_listing" }, ({ payload }) => {
           if (payload) {
-            const newListing: Listing = {
-              ...mapDbToListing(payload),
+            const newListing = mapDbToListing({
+              ...payload,
               isRealtimeNew: true,
-            };
+            });
             setDbListings((prev) => {
               if (prev.some((x) => x.id === newListing.id)) return prev;
               return [newListing, ...prev];
@@ -411,7 +266,28 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
 
       supabaseChannelRef.current = channel;
 
+      // Fallback Polling every 15 seconds to ensure fresh data across devices
+      const pollInterval = window.setInterval(() => {
+        fetchSupabaseListings();
+      }, 15000);
+
+      // Refetch when tab regains focus or visibility
+      const handleFocus = () => {
+        fetchSupabaseListings();
+      };
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          fetchSupabaseListings();
+        }
+      };
+
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
       return () => {
+        window.clearInterval(pollInterval);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
         supabase.removeChannel(channel);
       };
     } catch (err) {
@@ -419,72 +295,99 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchSupabaseListings]);
 
-  // addListing: farmer lists a harvest -> stored in DB + broadcasted in real time to buyers!
+  // addListing: persists into shared Supabase database and broadcasts across all devices
   const addListing = useCallback(
-    async (l: Omit<Listing, "id" | "distanceKm">): Promise<Listing> => {
-      const distanceKm = Math.round(1 + Math.random() * 9);
-      const tempId = `lst_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      const newListing: Listing = {
-        ...l,
-        id: tempId,
-        distanceKm,
-        createdAt: new Date().toISOString(),
-        isRealtimeNew: true,
+    async (l: {
+      cropId: string;
+      quantity: number;
+      unit?: string;
+      price: number;
+      farmer: string;
+      phone: string;
+      stateId: string;
+      districtId: string;
+      placeId?: string;
+      placeName: string;
+      farmerId?: string;
+      status?: ListingStatus;
+    }): Promise<Listing> => {
+      const supabase = getSupabase();
+      if (!supabase) {
+        throw new Error(
+          "Supabase database connection is not configured. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+        );
+      }
+
+      // 1. Primary insert payload according to standard schema
+      const standardPayload: Record<string, unknown> = {
+        crop: l.cropId,
+        state: l.stateId,
+        district: l.districtId,
+        mandi: l.placeName,
+        quantity: Number(l.quantity) || 1,
+        unit: l.unit || "quintal",
+        ask_price: Number(l.price) || 0,
+        farmer_name: l.farmer,
+        phone: l.phone,
+        status: l.status || "active",
       };
 
-      // 1. Optimistic update in local state for instantaneous feedback
-      setLocalAdded((prev) => {
-        const next = [newListing, ...prev];
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem("kb-listings", JSON.stringify(next));
-        }
-        return next;
+      if (l.farmerId) {
+        standardPayload.farmer_id = l.farmerId;
+      }
+
+      let insertResult = await supabase.from("listings").insert(standardPayload).select().single();
+
+      // 2. If new columns don't exist yet (migration pending), fallback to legacy column names
+      if (insertResult.error && insertResult.error.message?.includes("column")) {
+        console.warn(
+          "Column mismatch on standard insert, attempting legacy schema insert:",
+          insertResult.error.message,
+        );
+        const legacyPayload = {
+          crop_id: l.cropId,
+          state_id: l.stateId,
+          district_id: l.districtId,
+          place_id: l.placeId || l.districtId,
+          place_name: l.placeName,
+          quantity: Number(l.quantity) || 1,
+          price: Number(l.price) || 0,
+          farmer: l.farmer,
+          phone: l.phone,
+        };
+
+        insertResult = await supabase.from("listings").insert(legacyPayload).select().single();
+      }
+
+      if (insertResult.error) {
+        console.error("[Supabase Insert Error]:", insertResult.error);
+        throw new Error(insertResult.error.message || "Failed to post listing to database.");
+      }
+
+      const savedListing = mapDbToListing({
+        ...insertResult.data,
+        isRealtimeNew: true,
       });
 
-      // 2. Broadcast via local BroadcastChannel (cross-tab real-time in milliseconds)
-      if (localBroadcastRef.current) {
+      // Update local state immediately so publisher sees their listing instantly
+      setDbListings((prev) => [savedListing, ...prev.filter((x) => x.id !== savedListing.id)]);
+      setLatestNewListing(savedListing);
+      setNewListingAlertCount((c) => c + 1);
+
+      // Broadcast to all active devices listening via Supabase Realtime
+      if (supabaseChannelRef.current) {
         try {
-          localBroadcastRef.current.postMessage({
-            type: "NEW_LISTING",
-            listing: newListing,
+          supabaseChannelRef.current.send({
+            type: "broadcast",
+            event: "new_listing",
+            payload: insertResult.data,
           });
         } catch {
-          /* ignore */
+          /* ignore broadcast send errors */
         }
       }
 
-      // 3. Persist to Supabase and broadcast over Supabase Realtime channel
-      const supabase = getSupabase();
-      if (supabase) {
-        const dbPayload = mapListingToDb(l);
-        try {
-          const { data, error } = await supabase
-            .from("listings")
-            .insert(dbPayload)
-            .select()
-            .single();
-
-          if (error) {
-            console.warn("Supabase insert notice (fallback to local state):", error.message);
-          } else if (data) {
-            const savedItem = mapDbToListing(data);
-            setDbListings((prev) => [savedItem, ...prev.filter((x) => x.id !== tempId)]);
-          }
-
-          // Also broadcast through channel so subscribed clients receive it instantly
-          if (supabaseChannelRef.current) {
-            supabaseChannelRef.current.send({
-              type: "broadcast",
-              event: "new_listing",
-              payload: dbPayload,
-            });
-          }
-        } catch (err) {
-          console.warn("Failed to insert into Supabase listings:", err);
-        }
-      }
-
-      return newListing;
+      return savedListing;
     },
     [],
   );
@@ -493,41 +396,11 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     setLatestNewListing(null);
   }, []);
 
-  // Combined list: DB listings + newly added local listings + initial seed listings
-  const listings = useMemo<Listing[]>(() => {
-    const seen = new Set<string>();
-    const result: Listing[] = [];
-
-    // Prioritize freshly added items
-    for (const item of localAdded) {
-      if (!seen.has(item.id)) {
-        seen.add(item.id);
-        result.push(item);
-      }
-    }
-
-    // Next DB listings
-    for (const item of dbListings) {
-      if (!seen.has(item.id)) {
-        seen.add(item.id);
-        result.push(item);
-      }
-    }
-
-    // Next SEED fallback
-    for (const item of SEED) {
-      if (!seen.has(item.id)) {
-        seen.add(item.id);
-        result.push(item);
-      }
-    }
-
-    return result;
-  }, [localAdded, dbListings]);
-
   const value = useMemo<ListingsContextValue>(
     () => ({
-      listings,
+      listings: dbListings,
+      isLoading,
+      error,
       addListing,
       realtimeStatus,
       isSupabaseReady,
@@ -537,7 +410,9 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       refreshListings: fetchSupabaseListings,
     }),
     [
-      listings,
+      dbListings,
+      isLoading,
+      error,
       addListing,
       realtimeStatus,
       isSupabaseReady,

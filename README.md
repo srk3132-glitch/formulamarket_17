@@ -1,24 +1,63 @@
-# FarmConnect Hub
+# Formula Market (Farm-Gate Direct Produce Marketplace)
 
-build me a website STRENGTHENING MARKET LINKAGES AND PRICE DISCOVERY FOR FARMERS, it should tell real time info about market prices,farmers should be able to access and read text in [english,tamil,telugu,maliyalam].and it should be a platform where farmers can get to know the market price and other people can buy from them.farmers should select the region they are selling in like area,place,state
+Real-time farm price discovery and direct farmer-to-buyer agricultural marketplace built with Next.js / TanStack Start + Vite + Supabase Realtime.
 
-This project was built with [Lovable](https://lovable.dev).
+---
 
-## Build with Lovable
+## 🚀 Supabase Shared Database & Realtime Setup
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/9db5124d-1d0c-4cbb-9a3b-5bf0da279d7d).
+To enable listings to synchronize across all devices in real-time, configure Supabase credentials and execute the database migration.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+### 1. Required Environment Variables
 
-## Development
+Add the following to your local `.env.local` AND in **Vercel Project Settings → Environment Variables** (for **Production**, **Preview**, and **Development**):
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+```bash
+# Supabase Project URL & Anon Key (From Supabase Dashboard -> Project Settings -> API)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_your_key_here
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+# Vite environment aliases (automatically supported)
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
+```
+
+### 2. Run Database Migration
+
+Open your **Supabase Dashboard → SQL Editor → New Query**, paste the contents of [`supabase/migrations/20261008000000_create_listings_and_public_view.sql`](./supabase/migrations/20261008000000_create_listings_and_public_view.sql), and click **Run**.
+
+This migration sets up:
+
+- **`public.listings`**: Shared table for all harvest lots across devices.
+- **Row Level Security (RLS)**: Enforces access control, allowing anyone to view active listings while protecting owner writes.
+- **`public.public_listings`**: Privacy view omitting farmer phone numbers for unauthenticated visitors.
+- **`public.verified_buyer_listings`** & **`get_listing_contact` RPC**: Exposes direct phone numbers only to verified, signed-in buyers.
+- **Realtime Publication**: Executes `ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;` so buyer screens update immediately on inserts.
+
+---
+
+## 📲 Cross-Device Testing Flow
+
+1. Open `http://localhost:5173/sell` (or your Vercel deployment URL `/sell`) on **Device A** (e.g., Desktop).
+2. Open `/buy` on **Device B** (e.g., Mobile phone or an Incognito browser window).
+3. On **Device A**, select a crop, state, district, and mandi, set quantity and ask price, enter your phone number, and click **Post listing**.
+4. Within seconds, **Device B** will automatically display the new harvest lot in the marketplace feed with a `LIVE NEW` badge without requiring manual page refresh.
+5. On **Device B**, when signed out, the farmer's phone number is securely masked (`Sign in to view farmer contact`); once signed in as a buyer, the phone number and call button are unlocked.
+
+---
+
+## 🛠 Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start local development server
 npm run dev
+
+# Run build
+npm run build
+
+# Run linter
+npm run lint
 ```

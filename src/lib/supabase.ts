@@ -4,10 +4,29 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 export const DEFAULT_SUPABASE_KEY = "sb_publishable_hRm0DFsc2vKNtqRcCAojJg_OiA8w2WM";
 
 export function getStoredSupabaseConfig() {
-  const envUrl = (import.meta.env.VITE_SUPABASE_URL || "").trim();
+  // Check both Vite and Next.js / standard process.env conventions
+  const metaEnv =
+    typeof import.meta !== "undefined"
+      ? (import.meta.env as Record<string, string | undefined>) || {}
+      : {};
+  const procEnv =
+    typeof process !== "undefined" ? (process.env as Record<string, string | undefined>) || {} : {};
+
+  const envUrl = (
+    metaEnv.NEXT_PUBLIC_SUPABASE_URL ||
+    metaEnv.VITE_SUPABASE_URL ||
+    procEnv.NEXT_PUBLIC_SUPABASE_URL ||
+    procEnv.VITE_SUPABASE_URL ||
+    ""
+  ).trim();
+
   const envKey = (
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    metaEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    metaEnv.VITE_SUPABASE_ANON_KEY ||
+    metaEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    procEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    procEnv.VITE_SUPABASE_ANON_KEY ||
     ""
   ).trim();
 
@@ -23,14 +42,21 @@ export function getStoredSupabaseConfig() {
     }
   }
 
-  const url = storedUrl || envUrl;
-  const key = storedKey || envKey || DEFAULT_SUPABASE_KEY;
+  // Prioritize environment variables from Vercel / .env, fallback to stored config
+  const url = envUrl || storedUrl;
+  const key = envKey || storedKey || DEFAULT_SUPABASE_KEY;
 
   const isValidUrl =
     Boolean(url) &&
     !url.includes("your-project-id") &&
     !url.includes("example.supabase.co") &&
     (url.startsWith("https://") || url.startsWith("http://"));
+
+  if (!isValidUrl && typeof window === "undefined") {
+    console.warn(
+      "[Supabase Config] Missing valid Supabase Project URL. Please set NEXT_PUBLIC_SUPABASE_URL or VITE_SUPABASE_URL in your Vercel / environment settings.",
+    );
+  }
 
   return {
     url,

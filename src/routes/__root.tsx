@@ -16,7 +16,6 @@ import { RegionProvider } from "../lib/region-store";
 import { ListingsProvider } from "../lib/listings-store";
 import { AuthProvider } from "../lib/auth-store";
 import { SiteHeader } from "../components/SiteHeader";
-import { HorizontalLanguageBar } from "../components/HorizontalLanguageBar";
 import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
@@ -134,7 +133,6 @@ function RootComponent() {
                   <div className="absolute bottom-0 left-1/4 h-[420px] w-[420px] rounded-full bg-brand-deep/20 blur-3xl" />
                 </div>
                 <SiteHeader />
-                <HorizontalLanguageBar />
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
                 <Outlet />
                 <SiteFooter />

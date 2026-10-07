@@ -139,6 +139,27 @@ const en: Dict = {
   searchProduce: "Search all vegetables & fruits...",
   unitQuintal: "₹ / Quintal",
   unitKg: "₹ / Kg",
+  unitTonne: "tonne",
+  useMyLocation: "Use my location",
+  locationDetected: "Location detected",
+  whatsappAvailable: "WhatsApp available on this number",
+  availableFrom: "Available from date",
+  qualityGrade: "Quality Grade",
+  gradeA: "Grade A (Premium)",
+  gradeB: "Grade B (Standard)",
+  gradeC: "Grade C (Fair)",
+  organicProduce: "100% Organic certified produce",
+  uploadPhotos: "Upload harvest photos (up to 3)",
+  zeroCommissionTrust: "0% commission. Your number is shown only to verified buyers.",
+  rateNotAvailable: "Rate not available",
+  viewMyListing: "View my listing",
+  postAnother: "Post another harvest",
+  listingConfirmed: "Harvest Listing Published Live!",
+  retryPost: "Retry posting",
+  rateAbove: "above today's mandi rate",
+  rateBelow: "below today's mandi rate",
+  rateMatching: "matches today's mandi rate",
+  searchCrops: "Search crop name...",
 };
 
 const ta: Dict = {
@@ -417,7 +438,6 @@ const ml: Dict = {
   unitKg: "₹ / കിലോ",
 };
 
-
 const hi: Dict = {
   brand: "फार्मकनेक्ट हब",
   tagline: "कृषि मंडी भाव व सीधी खरीद-बिक्री",
@@ -430,7 +450,8 @@ const hi: Dict = {
   heroA: "सटीक मंडी भाव,",
   heroB: "पारदर्शी बाज़ार",
   heroC: "हर किसान के लिए।",
-  heroSub: "मंडी भावों के बदलते ही तुरंत जानकारी पाएं, अपने क्षेत्र की फसल सीधे व्यापारियों और खरीदारों को बेचें — 0% दलाली, आपकी अपनी भाषा में।",
+  heroSub:
+    "मंडी भावों के बदलते ही तुरंत जानकारी पाएं, अपने क्षेत्र की फसल सीधे व्यापारियों और खरीदारों को बेचें — 0% दलाली, आपकी अपनी भाषा में।",
   whereSelling: "आप किस क्षेत्र में बेच रहे हैं?",
   state: "राज्य",
   district: "ज़िला / क्षेत्र",
@@ -513,7 +534,6 @@ const hi: Dict = {
   slotBookingSub: "मंडी में माल उतारने और तौल कांटे के लिए टोकन स्लॉट बुक करें",
 };
 
-
 const kn: Dict = {
   brand: "ಫಾರ್ಮ್‌ಕನೆಕ್ಟ್ ಹಬ್",
   tagline: "ರೈತರಿಗೆ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ಮಾಹಿತಿ ಮತ್ತು ನೇರ ಮಾರಾಟ",
@@ -526,7 +546,8 @@ const kn: Dict = {
   heroA: "ನಿಜವಾದ ಮಂಡಿ ದರಗಳು,",
   heroB: "ನ್ಯಾಯಯುತ ಮಾರುಕಟ್ಟೆ",
   heroC: "ಪ್ರತಿಯೊಬ್ಬ ರೈತರಿಗಾಗಿ.",
-  heroSub: "ಮಂಡಿ ದರಗಳು ಬದಲಾದ ತಕ್ಷಣ ತಿಳಿದುಕೊಳ್ಳಿ, ನಿಮ್ಮ ಪ್ರದೇಶದ ಬೆಳೆಯನ್ನು ನೇರವಾಗಿ ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ ಮಾಡಿ — ನಿಮ್ಮದೇ ಭಾಷೆಯಲ್ಲಿ.",
+  heroSub:
+    "ಮಂಡಿ ದರಗಳು ಬದಲಾದ ತಕ್ಷಣ ತಿಳಿದುಕೊಳ್ಳಿ, ನಿಮ್ಮ ಪ್ರದೇಶದ ಬೆಳೆಯನ್ನು ನೇರವಾಗಿ ಖರೀದಿದಾರರಿಗೆ ಮಾರಾಟ ಮಾಡಿ — ನಿಮ್ಮದೇ ಭಾಷೆಯಲ್ಲಿ.",
   whereSelling: "ನೀವು ಎಲ್ಲಿ ಮಾರಾಟ ಮಾಡುತ್ತಿದ್ದೀರಿ?",
   state: "ರಾಜ್ಯ",
   district: "ಜಿಲ್ಲೆ / ಪ್ರದೇಶ",
@@ -609,7 +630,6 @@ const kn: Dict = {
   slotBookingSub: "ಮಂಡಿಯಲ್ಲಿ ಅನ್‌ಲೋಡಿಂಗ್‌ಗಾಗಿ ಡಿಜಿಟಲ್ ಸ್ಲಾಟ್ ಕಾಯ್ದಿರಿಸಿ",
 };
 
-
 const mr: Dict = {
   brand: "फार्मकनेक्ट हब",
   tagline: "शेतकऱ्यांसाठी थेट बाजारभाव आणि खरेदी-विक्री",
@@ -622,7 +642,8 @@ const mr: Dict = {
   heroA: "अचूक बाजारभाव,",
   heroB: "पारदर्शक बाजार",
   heroC: "प्रत्येक बळीराजासाठी.",
-  heroSub: "मंडीचे भाव बदलताच त्वरित माहिती मिळवा, आपला शेतमाल थेट खरेदीदारांना विका — 0% दलाली, आपल्या स्वतःच्या भाषेत.",
+  heroSub:
+    "मंडीचे भाव बदलताच त्वरित माहिती मिळवा, आपला शेतमाल थेट खरेदीदारांना विका — 0% दलाली, आपल्या स्वतःच्या भाषेत.",
   whereSelling: "आपण कोठे विक्री करत आहात?",
   state: "राज्य",
   district: "जिल्हा / परिसर",
@@ -705,7 +726,6 @@ const mr: Dict = {
   slotBookingSub: "मंडीत शेतमाल उतरवण्यासाठी डिजिटल स्लॉट बुक करा",
 };
 
-
 const bn: Dict = {
   brand: "ফার্মকানেক্ট হাব",
   tagline: "কৃষকদের জন্য লাইভ বাজার দর ও সরাসরি ক্রয়-বিক্রয়",
@@ -718,7 +738,8 @@ const bn: Dict = {
   heroA: "সঠিক বাজার দর,",
   heroB: "ন্যায্য বাজার",
   heroC: "প্রতিটি কৃষকের জন্য।",
-  heroSub: "মান্ডি দর পরিবর্তনের সাথে সাথে জানুন, সরাসরি ক্রেতাদের কাছে বিক্রি করুন — ০% কমিশন, আপনার নিজের ভাষায়।",
+  heroSub:
+    "মান্ডি দর পরিবর্তনের সাথে সাথে জানুন, সরাসরি ক্রেতাদের কাছে বিক্রি করুন — ০% কমিশন, আপনার নিজের ভাষায়।",
   whereSelling: "কোথায় বিক্রি করছেন?",
   state: "রাজ্য",
   district: "জেলা / এলাকা",
@@ -801,7 +822,6 @@ const bn: Dict = {
   slotBookingSub: "মান্ডিতে ডিজিটাল গেট পাস এবং ওজন কাঁটার স্লট নিন",
 };
 
-
 const gu: Dict = {
   brand: "ફાર્મકનેક્ટ હબ",
   tagline: "ખેડૂતો માટે લાઈવ માર્કેટ યાર્ડ ભાવ અને સીધું વેચાણ",
@@ -814,7 +834,8 @@ const gu: Dict = {
   heroA: "સાચા માર્કેટ યાર્ડ ભાવ,",
   heroB: "પારદર્શક બજાર",
   heroC: "દરેક ખેડૂત માટે.",
-  heroSub: "APMC માર્કેટ યાર્ડના ભાવ બદલાતા જ તુરંત જાણો, તમારો પાક સીધો વેપારીઓને વેચો — 0% કમિશન, તમારી પોતાની ભાષામાં.",
+  heroSub:
+    "APMC માર્કેટ યાર્ડના ભાવ બદલાતા જ તુરંત જાણો, તમારો પાક સીધો વેપારીઓને વેચો — 0% કમિશન, તમારી પોતાની ભાષામાં.",
   whereSelling: "તમે ક્યાં વેચાણ કરી રહ્યા છો?",
   state: "રાજ્ય",
   district: "જિલ્લો / વિસ્તાર",
@@ -897,7 +918,6 @@ const gu: Dict = {
   slotBookingSub: "માર્કેટ યાર્ડમાં વજન કાંટા અને માલ ખાલી કરવા માટે સ્લોટ બુક કરો",
 };
 
-
 const pa: Dict = {
   ...hi,
   brand: "ਫਾਰਮਕਨੈਕਟ ਹੱਬ",
@@ -911,7 +931,8 @@ const pa: Dict = {
   heroA: "ਸਹੀ ਮੰਡੀ ਭਾਅ,",
   heroB: "ਨਿਰਪੱਖ ਮੰਡੀ",
   heroC: "ਹਰ ਕਿਸਾਨ ਲਈ।",
-  heroSub: "ਮੰਡੀ ਦੇ ਭਾਅ ਬਦਲਦਿਆਂ ਹੀ ਜਾਣਕਾਰੀ ਪਾਓ, ਆਪਣੀ ਫ਼ਸਲ ਸਿੱਧੀ ਵਪਾਰੀਆਂ ਨੂੰ ਵੇਚੋ — 0% ਦਲਾਲੀ, ਆਪਣੀ ਬੋਲੀ ਵਿੱਚ।",
+  heroSub:
+    "ਮੰਡੀ ਦੇ ਭਾਅ ਬਦਲਦਿਆਂ ਹੀ ਜਾਣਕਾਰੀ ਪਾਓ, ਆਪਣੀ ਫ਼ਸਲ ਸਿੱਧੀ ਵਪਾਰੀਆਂ ਨੂੰ ਵੇਚੋ — 0% ਦਲਾਲੀ, ਆਪਣੀ ਬੋਲੀ ਵਿੱਚ।",
   whereSelling: "ਤੁਸੀਂ ਕਿੱਥੇ ਵੇਚ ਰਹੇ ਹੋ?",
   state: "ਸੂਬਾ",
   district: "ਜ਼ਿਲ੍ਹਾ",
@@ -931,7 +952,6 @@ const pa: Dict = {
   unitQuintal: "₹ / ਕੁਇੰਟਲ",
   unitKg: "₹ / ਕਿਲੋ",
 };
-
 
 const or: Dict = {
   ...hi,
@@ -969,7 +989,8 @@ const ur: Dict = {
   heroA: "اصل منڈی ریٹس،",
   heroB: "منصفانہ مارکیٹ",
   heroC: "ہر کسان کے لیے۔",
-  heroSub: "منڈی کی قیمتیں بدلتے ہی جانیے، اپنی فصل سیدھے خریداروں کو بیچیں — 0% کمیشن، اپنی زبان میں۔",
+  heroSub:
+    "منڈی کی قیمتیں بدلتے ہی جانیے، اپنی فصل سیدھے خریداروں کو بیچیں — 0% کمیشن، اپنی زبان میں۔",
   whereSelling: "آپ کہاں بیچ رہے ہیں؟",
   state: "ریاست",
   district: "ضلع",

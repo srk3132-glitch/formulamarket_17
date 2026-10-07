@@ -1,5 +1,6 @@
 -- ==============================================================================
 -- FORMULA MARKET: SHARED REALTIME LISTINGS & SECURE PUBLIC ACCESS MIGRATION
+-- Migration: 20261008000000_create_listings_and_public_view.sql
 -- Run this in your Supabase SQL Editor (Dashboard -> SQL Editor -> New Query -> Run)
 -- ==============================================================================
 
@@ -70,6 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_listings_expires_at ON public.listings(expires_at
 -- 3. Row Level Security (RLS)
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 
+-- Clean existing policies to prevent conflicts
 DROP POLICY IF EXISTS "Public can select active unexpired listings" ON public.listings;
 DROP POLICY IF EXISTS "Allow public read access" ON public.listings;
 DROP POLICY IF EXISTS "Allow public read" ON public.listings;
@@ -79,11 +81,13 @@ DROP POLICY IF EXISTS "Allow public insert" ON public.listings;
 DROP POLICY IF EXISTS "Owner can update listing" ON public.listings;
 DROP POLICY IF EXISTS "Owner can delete listing" ON public.listings;
 
+-- SELECT policy: Anyone (signed-in or anonymous) can view active unexpired listings
 CREATE POLICY "Public can select active unexpired listings"
   ON public.listings
   FOR SELECT
   USING (status = 'active' AND expires_at > now());
 
+-- INSERT policy: Owner can insert their listing; fallback allows anon for phone-verified sessions
 CREATE POLICY "Owner can insert listing"
   ON public.listings
   FOR INSERT
@@ -92,12 +96,14 @@ CREATE POLICY "Owner can insert listing"
     (auth.uid() IS NULL)
   );
 
+-- UPDATE policy: Only the owner can update their own rows
 CREATE POLICY "Owner can update listing"
   ON public.listings
   FOR UPDATE
   USING (auth.uid() IS NOT NULL AND farmer_id = auth.uid())
   WITH CHECK (auth.uid() IS NOT NULL AND farmer_id = auth.uid());
 
+-- DELETE policy: Only the owner can delete their own rows
 CREATE POLICY "Owner can delete listing"
   ON public.listings
   FOR DELETE
@@ -122,6 +128,7 @@ SELECT
 FROM public.listings
 WHERE status = 'active' AND expires_at > now();
 
+-- Grant permissions for public view
 GRANT SELECT ON public.public_listings TO anon, authenticated;
 
 -- 5. Verified View for authenticated users (includes farmer phone)
@@ -144,6 +151,7 @@ SELECT
 FROM public.listings
 WHERE status = 'active' AND expires_at > now();
 
+-- Only authenticated users can access the phone contact view
 REVOKE SELECT ON public.verified_buyer_listings FROM anon;
 GRANT SELECT ON public.verified_buyer_listings TO authenticated;
 
@@ -157,6 +165,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
+  -- Check if caller is authenticated
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Authentication required to view farmer phone number.';
   END IF;
