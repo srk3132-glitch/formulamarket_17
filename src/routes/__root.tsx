@@ -16,6 +16,7 @@ import { RegionProvider } from "../lib/region-store";
 import { ListingsProvider } from "../lib/listings-store";
 import { AuthProvider } from "../lib/auth-store";
 import { SiteHeader } from "../components/SiteHeader";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +136,7 @@ function RootComponent() {
                 {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
                 <Outlet />
                 <SiteFooter />
+                <Toaster position="top-right" richColors />
               </div>
             </AuthProvider>
           </ListingsProvider>

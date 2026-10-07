@@ -8,8 +8,17 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const image = getCropImage(listing.cropId).src ?? paddyImg;
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-white/70 bg-white/50 shadow-[var(--shadow-glass-sm)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-brand/50 hover:bg-white/80 hover:shadow-xl">
+    <article className={`group overflow-hidden rounded-3xl border ${listing.isRealtimeNew ? "border-emerald-500/80 shadow-emerald-500/10 ring-2 ring-emerald-500/30" : "border-white/70"} bg-white/50 shadow-[var(--shadow-glass-sm)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-brand/50 hover:bg-white/80 hover:shadow-xl`}>
       <div className="relative aspect-[4/3] w-full overflow-hidden">
+        {listing.isRealtimeNew ? (
+          <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-emerald-600/95 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white shadow-lg">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex size-2 rounded-full bg-white"></span>
+            </span>
+            LIVE NEW
+          </span>
+        ) : null}
         <img
           src={image}
           alt={`${cropName(listing.cropId, lang)} for sale`}

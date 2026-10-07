@@ -1,0 +1,87 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+// Default fallback key supplied by user
+export const DEFAULT_SUPABASE_KEY = "sb_publishable_hRm0DFsc2vKNtqRcCAojJg_OiA8w2WM";
+
+export function getStoredSupabaseConfig() {
+  const envUrl = (import.meta.env.VITE_SUPABASE_URL || "").trim();
+  const envKey = (
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    ""
+  ).trim();
+
+  let storedUrl = "";
+  let storedKey = "";
+
+  if (typeof window !== "undefined") {
+    try {
+      storedUrl = (window.localStorage.getItem("fm_supabase_url") || "").trim();
+      storedKey = (window.localStorage.getItem("fm_supabase_key") || "").trim();
+    } catch {
+      // ignore localStorage error in SSR or strict mode
+    }
+  }
+
+  const url = storedUrl || envUrl;
+  const key = storedKey || envKey || DEFAULT_SUPABASE_KEY;
+
+  const isValidUrl =
+    Boolean(url) &&
+    !url.includes("your-project-id") &&
+    !url.includes("example.supabase.co") &&
+    (url.startsWith("https://") || url.startsWith("http://"));
+
+  return {
+    url,
+    key,
+    isConfigured: isValidUrl && Boolean(key),
+  };
+}
+
+let supabaseInstance: SupabaseClient | null = null;
+let currentConfigKey = "";
+
+export function getSupabase(): SupabaseClient | null {
+  const config = getStoredSupabaseConfig();
+  if (!config.isConfigured) {
+    return null;
+  }
+
+  const cacheKey = `${config.url}::${config.key}`;
+  if (supabaseInstance && currentConfigKey === cacheKey) {
+    return supabaseInstance;
+  }
+
+  try {
+    supabaseInstance = createClient(config.url, config.key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+    });
+    currentConfigKey = cacheKey;
+    return supabaseInstance;
+  } catch (err) {
+    console.warn("Failed to initialize Supabase client:", err);
+    return null;
+  }
+}
+
+export function saveSupabaseConfig(url: string, key?: string) {
+  if (typeof window !== "undefined") {
+    if (url) {
+      window.localStorage.setItem("fm_supabase_url", url.trim());
+    }
+    if (key) {
+      window.localStorage.setItem("fm_supabase_key", key.trim());
+    }
+    supabaseInstance = null;
+    currentConfigKey = "";
+  }
+}

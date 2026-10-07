@@ -7,8 +7,10 @@ import { useRegion } from "@/lib/region-store";
 import { useListings } from "@/lib/listings-store";
 import { useAuth } from "@/lib/auth-store";
 import { buildPrices, formatRupees } from "@/lib/prices";
-import { Sprout, Store, ArrowRightLeft, ShieldCheck } from "lucide-react";
+import { Sprout, Store, ArrowRightLeft, ShieldCheck, Radio, CheckCircle2, Loader2 } from "lucide-react";
 import { InterfaceModeNav } from "@/components/InterfaceModeNav";
+import { SupabaseConnectionBar } from "@/components/SupabaseConnectionBar";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/sell")({
   head: () => ({
@@ -44,6 +46,7 @@ function SellPage() {
   const [farmer, setFarmer] = useState(user?.role === "seller" ? user.name : "");
   const [phone, setPhone] = useState(user?.role === "seller" ? user.phone : "");
   const [done, setDone] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user?.role === "seller") {
@@ -53,12 +56,17 @@ function SellPage() {
   }, [user]);
 
   const reference = buildPrices(region.placeId, 0).find((r) => r.cropId === cropId);
-  const mine = listings.filter((l) => l.id.startsWith("u"));
+  const mine = listings.filter(
+    (l) => l.id.startsWith("u") || l.id.startsWith("lst_") || (farmer && l.farmer === farmer),
+  );
 
   return (
     <main className="relative z-10 mx-auto max-w-6xl px-5 pb-16 pt-8">
       {/* Interface Mode Switcher */}
       <InterfaceModeNav currentMode="sell" />
+
+      {/* Supabase Realtime Database Status Bar */}
+      <SupabaseConnectionBar />
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
         <section className="rounded-3xl border border-white/60 bg-white/40 p-8 shadow-[var(--shadow-glass)] backdrop-blur-2xl">
@@ -149,22 +157,33 @@ function SellPage() {
 
           <form
             className="mt-6 space-y-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              addListing({
-                cropId,
-                quantity: Number(quantity) || 1,
-                price: Number(price) || (reference?.modal ?? 0),
-                farmer: farmer || "Farmer",
-                phone: phone || "+91",
-                stateId: region.stateId,
-                districtId: region.districtId,
-                placeId: region.placeId,
-                placeName,
-              });
-              setDone(true);
-              setQuantity("");
-              setPrice("");
+              setIsSubmitting(true);
+              try {
+                await addListing({
+                  cropId,
+                  quantity: Number(quantity) || 1,
+                  price: Number(price) || (reference?.modal ?? 0),
+                  farmer: farmer || "Farmer",
+                  phone: phone || "+91",
+                  stateId: region.stateId,
+                  districtId: region.districtId,
+                  placeId: region.placeId,
+                  placeName,
+                });
+                setDone(true);
+                setQuantity("");
+                setPrice("");
+                toast.success(
+                  "🌾 Harvest published live! All buyers across the network can see this in real-time.",
+                  { duration: 5000 },
+                );
+              } catch (err) {
+                toast.error("Failed to post listing. Please try again.");
+              } finally {
+                setIsSubmitting(false);
+              }
             }}
           >
             <label className="block">
@@ -248,14 +267,26 @@ function SellPage() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)] transition hover:bg-brand/90"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)] transition hover:bg-brand/90 disabled:opacity-60"
             >
-              {t("postListing")}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Publishing to Realtime Feed...</span>
+                </>
+              ) : (
+                <>
+                  <Radio className="size-4" />
+                  <span>{t("postListing")}</span>
+                </>
+              )}
             </button>
             {done ? (
-              <p className="rounded-xl border border-brand/30 bg-brand/10 px-3 py-2 text-sm font-medium text-brand">
-                {t("posted")}
-              </p>
+              <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-3.5 py-2.5 text-xs font-semibold text-emerald-900 shadow-2xs">
+                <CheckCircle2 className="size-4 text-emerald-700 shrink-0" />
+                <span>Harvest published live! Synced across all buyer screens in real-time.</span>
+              </div>
             ) : null}
           </form>
         </section>

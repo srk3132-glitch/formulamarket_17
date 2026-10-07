@@ -2,15 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PriceBoard } from "@/components/PriceBoard";
 import { RegionSelector } from "@/components/RegionSelector";
 import { ListingCard } from "@/components/ListingCard";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, cropName } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-store";
 import { useListings } from "@/lib/listings-store";
 import { useAuth } from "@/lib/auth-store";
-import { Store, Sprout, ArrowRightLeft, Building2 } from "lucide-react";
-
+import { Store, Sprout, ArrowRightLeft, Building2, Search, Sparkles, Radio, Bell } from "lucide-react";
 import { InterfaceModeNav } from "@/components/InterfaceModeNav";
-import { Search } from "lucide-react";
-import { useState } from "react";
+import { SupabaseConnectionBar } from "@/components/SupabaseConnectionBar";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/buy")({
   head: () => ({
@@ -33,11 +33,20 @@ export const Route = createFileRoute("/buy")({
 });
 
 function BuyPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { region, placeName, districtName, stateName } = useRegion();
-  const { listings } = useListings();
+  const { listings, latestNewListing, newListingAlertCount, clearLatestListing } = useListings();
   const { user, isAuthenticated, switchRole, quickLoginDemo } = useAuth();
   const [filterQuery, setFilterQuery] = useState("");
+
+  useEffect(() => {
+    if (latestNewListing) {
+      toast.success(
+        `🌾 Live Harvest: ${latestNewListing.farmer} listed ${latestNewListing.quantity} quintals of ${cropName(latestNewListing.cropId, lang)}!`,
+        { duration: 5000 },
+      );
+    }
+  }, [latestNewListing, lang]);
 
   const inRegion = listings.filter((l) => l.stateId === region.stateId);
   const baseListings = inRegion.length > 0 ? inRegion : listings;
@@ -56,6 +65,9 @@ function BuyPage() {
     <main className="relative z-10 mx-auto max-w-6xl px-5 pb-16 pt-8">
       {/* Interface Mode Switcher */}
       <InterfaceModeNav currentMode="buy" />
+
+      {/* Supabase Realtime Database Status Bar */}
+      <SupabaseConnectionBar />
 
       <section className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-[var(--shadow-glass)] backdrop-blur-2xl">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -175,13 +187,47 @@ function BuyPage() {
         </Link>
       </section>
 
+      {/* Realtime Live Arrival Banner */}
+      {latestNewListing && (
+        <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-emerald-500/50 bg-emerald-50/90 p-3.5 text-xs text-emerald-950 backdrop-blur-xl shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex size-3 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
+              <span className="relative inline-flex size-3 rounded-full bg-emerald-600"></span>
+            </span>
+            <div>
+              <p className="font-semibold text-emerald-950">
+                ⚡ Just Listed in Real-Time: {latestNewListing.farmer} posted {latestNewListing.quantity} quintal(s) of {cropName(latestNewListing.cropId, lang)}!
+              </p>
+              <p className="text-[11px] text-emerald-900/70">
+                Location: {latestNewListing.placeName} · Instant farm-gate contact available below.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={clearLatestListing}
+            className="rounded-lg bg-emerald-200/60 px-2.5 py-1 text-[11px] font-semibold text-emerald-900 hover:bg-emerald-200 transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Marketplace Harvest Listings */}
       <section className="mt-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-deep/60">
-              Available Farm Lots ({shown.length})
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-deep/60">
+                Available Farm Lots ({shown.length})
+              </p>
+              {newListingAlertCount > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 animate-pulse">
+                  +{newListingAlertCount} Live Ingested
+                </span>
+              )}
+            </div>
             <p className="text-[11px] text-brand-deep/50">
               Direct farm-gate harvests with verified farmer contact numbers
             </p>
