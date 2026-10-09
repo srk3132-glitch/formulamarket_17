@@ -3,7 +3,7 @@ import { STATES, useRegion } from "@/lib/region-store";
 import { findDistrict, findState } from "@/lib/regions";
 
 const selectClass =
-  "w-full appearance-none rounded-xl border border-white/80 bg-white/70 px-3 py-2.5 text-sm font-medium text-ink outline-none focus:border-brand/50";
+  "w-full min-w-0 truncate appearance-none rounded-xl border border-white/80 bg-white/70 px-3 py-2.5 text-sm font-medium text-ink outline-none focus:border-brand/50";
 
 export function RegionSelector() {
   const { t } = useI18n();
@@ -14,7 +14,7 @@ export function RegionSelector() {
 
   return (
     <div className="grid grid-cols-1 gap-2.5 text-sm sm:grid-cols-3">
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">{t("state")}</span>
         <select
           className={selectClass}
@@ -33,7 +33,7 @@ export function RegionSelector() {
         </select>
       </label>
 
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
           {t("district")}
         </span>
@@ -53,7 +53,7 @@ export function RegionSelector() {
         </select>
       </label>
 
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">{t("place")}</span>
         <select
           className={selectClass}

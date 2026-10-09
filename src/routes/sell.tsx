@@ -167,7 +167,12 @@ function SellPage() {
 
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState<"quintal" | "kg" | "tonne">("quintal");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState<string>(() => {
+    const initRef = buildPrices(globalRegion.placeId || "kurumbapakkam", 0).find(
+      (r) => r.cropId === "tomato",
+    );
+    return initRef?.modal ? String(initRef.modal) : "";
+  });
 
   const [farmer, setFarmer] = useState(user?.role === "seller" ? user.name : "");
   const [phoneDigits, setPhoneDigits] = useState(
@@ -229,6 +234,13 @@ function SellPage() {
     const list = buildPrices(placeObj.id, 0);
     return list.find((r) => r.cropId === cropId);
   }, [placeObj.id, cropId]);
+
+  // Keep ask price pre-filled with the current benchmark until user customizes it
+  useEffect(() => {
+    if (reference?.modal && !touched.price) {
+      setPrice(String(reference.modal));
+    }
+  }, [reference?.modal, touched.price]);
 
   // Price comparison calculation
   const priceComparison = useMemo(() => {
@@ -379,7 +391,7 @@ function SellPage() {
   // Form Validation
   const phoneValid = /^[6-9]\d{9}$/.test(phoneDigits.trim());
   const quantityValid = Number(quantity) > 0;
-  const priceValid = Number(price) > 0;
+  const priceValid = !isNaN(Number(price)) && Number(price) > 0;
   const farmerValid = farmer.trim().length >= 2;
 
   const isFormValid = phoneValid && quantityValid && priceValid && farmerValid;
@@ -496,7 +508,7 @@ function SellPage() {
   const handlePostAnother = () => {
     setConfirmedListing(null);
     setQuantity("");
-    setPrice("");
+    setPrice(reference?.modal ? String(reference.modal) : "");
     setPhotos([]);
     setQualityGrade("");
     setAvailableFrom("");
@@ -664,16 +676,18 @@ function SellPage() {
                     className="w-full flex items-center justify-between rounded-2xl border border-white/80 bg-white/85 px-3.5 py-3 text-sm font-semibold text-ink shadow-2xs transition hover:bg-white focus:border-brand focus:ring-1 focus:ring-brand min-h-[46px]"
                     aria-expanded={isCropDropdownOpen}
                   >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <span className="text-xl">{selectedCropImage.emoji}</span>
+                    <div className="flex items-center gap-2.5 truncate min-w-0">
+                      <span className="text-xl shrink-0">{selectedCropImage.emoji}</span>
                       <span className="text-brand-deep font-bold truncate">
                         {cropName(cropId, lang)}
                       </span>
-                      {selectedCropInfo?.en && (
-                        <span className="text-xs text-brand-deep/50 truncate hidden sm:inline">
-                          ({selectedCropInfo.en})
-                        </span>
-                      )}
+                      {selectedCropInfo?.en &&
+                        selectedCropInfo.en.trim().toLowerCase() !==
+                          cropName(cropId, lang).trim().toLowerCase() && (
+                          <span className="text-xs text-brand-deep/50 truncate hidden sm:inline">
+                            ({selectedCropInfo.en})
+                          </span>
+                        )}
                     </div>
                     <ChevronDown
                       className={`size-4 text-brand-deep/60 transition-transform ${
@@ -833,14 +847,14 @@ function SellPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {/* State Select */}
-                  <label className="block">
+                  <label className="block min-w-0">
                     <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
                       {t("state")} <span className="text-red-500">*</span>
                     </span>
                     <select
-                      className="w-full rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
                       value={selectedStateId}
                       onChange={(e) => handleStateChange(e.target.value)}
                     >
@@ -853,12 +867,12 @@ function SellPage() {
                   </label>
 
                   {/* District Select (Clean names without stray asterisks) */}
-                  <label className="block">
+                  <label className="block min-w-0">
                     <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
                       {t("district")} <span className="text-red-500">*</span>
                     </span>
                     <select
-                      className="w-full rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
                       value={selectedDistrictId}
                       onChange={(e) => handleDistrictChange(e.target.value)}
                     >
@@ -871,12 +885,12 @@ function SellPage() {
                   </label>
 
                   {/* Mandi / Place Select */}
-                  <label className="block">
+                  <label className="block min-w-0">
                     <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
                       {t("place")} <span className="text-red-500">*</span>
                     </span>
                     <select
-                      className="w-full rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
                       value={selectedPlaceId}
                       onChange={(e) => {
                         setSelectedPlaceId(e.target.value);
@@ -898,48 +912,53 @@ function SellPage() {
               </div>
 
               {/* 3. QUANTITY & UNIT SELECTOR */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                    Quantity <span className="text-red-500">*</span>
-                  </span>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0.1"
-                      step="any"
-                      inputMode="decimal"
-                      className={`flex-1 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
-                        touched.quantity && !quantityValid
-                          ? "border-red-400 bg-red-50/50"
-                          : "border-white/80 focus:border-brand"
-                      }`}
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                      onBlur={() => setTouched((p) => ({ ...p, quantity: true }))}
-                      placeholder="e.g. 15"
-                      required
-                    />
-                    <select
-                      value={unit}
-                      onChange={(e) => setUnit(e.target.value as "quintal" | "kg" | "tonne")}
-                      className="rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-xs font-semibold text-brand-deep outline-none focus:border-brand min-h-[44px]"
-                    >
-                      <option value="quintal">quintal (क्विंटल)</option>
-                      <option value="kg">kg (किलो)</option>
-                      <option value="tonne">tonne (टन)</option>
-                    </select>
-                  </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <label className="block min-w-0">
+                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
+                      Quantity <span className="text-red-500">*</span>
+                    </span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="any"
+                        inputMode="decimal"
+                        className={`min-w-0 flex-1 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
+                          touched.quantity && !quantityValid
+                            ? "border-red-400 bg-red-50/50"
+                            : "border-white/80 focus:border-brand"
+                        }`}
+                        value={quantity}
+                        onChange={(e) => {
+                          setQuantity(e.target.value);
+                          setTouched((p) => ({ ...p, quantity: true }));
+                        }}
+                        onBlur={() => setTouched((p) => ({ ...p, quantity: true }))}
+                        placeholder="e.g. 15"
+                        required
+                      />
+                      <select
+                        value={unit}
+                        onChange={(e) => setUnit(e.target.value as "quintal" | "kg" | "tonne")}
+                        className="w-[125px] sm:w-[135px] max-w-[140px] shrink-0 truncate rounded-xl border border-white/80 bg-white/90 px-2 sm:px-2.5 py-2.5 text-xs font-semibold text-brand-deep outline-none focus:border-brand min-h-[44px]"
+                      >
+                        <option value="quintal">quintal (क्विंटल)</option>
+                        <option value="kg">kg (किलो)</option>
+                        <option value="tonne">tonne (टन)</option>
+                      </select>
+                    </div>
+                  </label>
                   {touched.quantity && !quantityValid && (
                     <span className="mt-1 block text-[11px] font-medium text-red-600">
                       Please enter a valid quantity.
                     </span>
                   )}
-                </label>
+                </div>
 
                 {/* 4. ASK PRICE WITH REAL-TIME COMPARISON HINT */}
-                <div>
-                  <label className="block">
+                <div className="min-w-0">
+                  <label className="block min-w-0">
                     <span className="mb-1 block text-xs font-semibold text-brand-deep">
                       Ask Price (₹ per {unit}) <span className="text-red-500">*</span>
                     </span>
@@ -947,30 +966,38 @@ function SellPage() {
                       type="number"
                       min="1"
                       inputMode="numeric"
-                      className={`w-full rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
+                      className={`w-full min-w-0 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
                         touched.price && !priceValid
                           ? "border-red-400 bg-red-50/50"
                           : "border-white/80 focus:border-brand"
                       }`}
                       value={price}
-                      onChange={(e) => setPrice(e.target.value)}
+                      onChange={(e) => {
+                        setPrice(e.target.value);
+                        setTouched((p) => ({ ...p, price: true }));
+                      }}
                       onBlur={() => setTouched((p) => ({ ...p, price: true }))}
                       placeholder={reference ? String(reference.modal) : "2150"}
                       required
                     />
                   </label>
+                  {touched.price && !priceValid && (
+                    <span className="mt-1 block text-[11px] font-medium text-red-600">
+                      Please enter a valid price.
+                    </span>
+                  )}
 
                   {/* Live Price Hint */}
                   {reference && priceComparison ? (
                     <div
-                      className={`mt-1.5 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                      className={`mt-1.5 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition min-w-0 ${
                         priceComparison.isWithinTen
                           ? "bg-emerald-100 text-emerald-800"
                           : "bg-amber-100 text-amber-900"
                       }`}
                     >
                       <TrendingUp className="size-3 shrink-0" />
-                      <span>
+                      <span className="truncate">
                         Today's mandi rate: {formatRupees(reference.modal)}/qtl. You're{" "}
                         {Math.abs(priceComparison.diffPct)}%{" "}
                         {priceComparison.isAbove
@@ -982,7 +1009,7 @@ function SellPage() {
                       </span>
                     </div>
                   ) : reference ? (
-                    <p className="mt-1 text-[11px] text-brand-deep/60">
+                    <p className="mt-1 text-[11px] text-brand-deep/60 truncate">
                       Mandi benchmark: <strong>{formatRupees(reference.modal)}</strong> / quintal
                     </p>
                   ) : null}
@@ -1000,44 +1027,46 @@ function SellPage() {
               </div>
 
               {/* 5. FARMER NAME & PHONE NUMBER */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                    {t("yourName")} <span className="text-red-500">*</span>
-                  </span>
-                  <input
-                    className={`w-full rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-medium text-ink outline-none transition min-h-[44px] ${
-                      touched.farmer && !farmerValid
-                        ? "border-red-400 bg-red-50/50"
-                        : "border-white/80 focus:border-brand"
-                    }`}
-                    value={farmer}
-                    onChange={(e) => setFarmer(e.target.value)}
-                    onBlur={() => setTouched((p) => ({ ...p, farmer: true }))}
-                    placeholder="e.g. Ramesh Patel"
-                    required
-                  />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <label className="block min-w-0">
+                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
+                      {t("yourName")} <span className="text-red-500">*</span>
+                    </span>
+                    <input
+                      className={`w-full min-w-0 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-medium text-ink outline-none transition min-h-[44px] ${
+                        touched.farmer && !farmerValid
+                          ? "border-red-400 bg-red-50/50"
+                          : "border-white/80 focus:border-brand"
+                      }`}
+                      value={farmer}
+                      onChange={(e) => setFarmer(e.target.value)}
+                      onBlur={() => setTouched((p) => ({ ...p, farmer: true }))}
+                      placeholder="e.g. Ramesh Patel"
+                      required
+                    />
+                  </label>
                   {touched.farmer && !farmerValid && (
                     <span className="mt-1 block text-[11px] font-medium text-red-600">
                       Please enter your name.
                     </span>
                   )}
-                </label>
+                </div>
 
-                <div>
-                  <label className="block">
+                <div className="min-w-0">
+                  <label className="block min-w-0">
                     <span className="mb-1 block text-xs font-semibold text-brand-deep">
                       {t("phone")} <span className="text-red-500">*</span>
                     </span>
-                    <div className="flex items-center rounded-xl border border-white/80 bg-white/80 px-3 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand min-h-[44px]">
-                      <span className="text-xs font-bold text-brand-deep/70 pr-2 border-r border-gray-300">
+                    <div className="flex items-center min-w-0 rounded-xl border border-white/80 bg-white/80 px-3 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand min-h-[44px]">
+                      <span className="text-xs font-bold text-brand-deep/70 pr-2 border-r border-gray-300 shrink-0">
                         +91
                       </span>
                       <input
                         type="tel"
                         maxLength={10}
                         inputMode="numeric"
-                        className="w-full bg-transparent px-2.5 py-2.5 text-sm font-semibold text-ink outline-none"
+                        className="w-full min-w-0 bg-transparent px-2.5 py-2.5 text-sm font-semibold text-ink outline-none"
                         value={phoneDigits}
                         onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ""))}
                         onBlur={() => setTouched((p) => ({ ...p, phone: true }))}
