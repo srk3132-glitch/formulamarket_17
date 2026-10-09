@@ -135,39 +135,82 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // 1. Try public_listings view first (which filters active & unexpired)
-      let { data, error: queryErr } = await supabase
-        .from("public_listings")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(100);
+      // Check auth status: authenticated users can query verified_buyer_listings (which includes phone)
+      // anonymous users query public_listings (which hides phone column)
+      let isAuthenticatedUser = false;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        isAuthenticatedUser = Boolean(sessionData?.session?.user);
+      } catch {
+        /* ignore */
+      }
+      if (!isAuthenticatedUser && typeof window !== "undefined") {
+        try {
+          const localUser = window.localStorage.getItem("fm-auth-user");
+          isAuthenticatedUser = Boolean(localUser);
+        } catch {
+          /* ignore */
+        }
+      }
 
-      // 2. If view does not exist yet, fallback to listings table
-      if (queryErr || !data) {
-        const fallbackRes = await supabase
-          .from("listings")
+      let data: Record<string, unknown>[] | null = null;
+      let queryErr: { message: string } | null = null;
+
+      if (isAuthenticatedUser) {
+        // 1. Authenticated users: try verified_buyer_listings view (includes farmer phone)
+        const verifiedRes = await supabase
+          .from("verified_buyer_listings")
           .select("*")
-          .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(100);
 
-        if (!fallbackRes.error && fallbackRes.data) {
-          data = fallbackRes.data;
-          queryErr = null;
-        } else if (fallbackRes.error) {
-          // 3. Fallback for older schema without status column
-          const legacyRes = await supabase
+        if (!verifiedRes.error && verifiedRes.data) {
+          data = verifiedRes.data;
+        } else {
+          // Fallback to listings table with phone
+          const listRes = await supabase
             .from("listings")
             .select("*")
+            .eq("status", "active")
             .order("created_at", { ascending: false })
             .limit(100);
 
-          if (!legacyRes.error && legacyRes.data) {
-            data = legacyRes.data;
-            queryErr = null;
+          if (!listRes.error && listRes.data) {
+            data = listRes.data;
           } else {
-            queryErr = fallbackRes.error;
+            // Fallback to public_listings
+            const pubRes = await supabase
+              .from("public_listings")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(100);
+            data = pubRes.data;
+            queryErr = pubRes.error;
           }
+        }
+      } else {
+        // 2. Anonymous / signed-out users: query public_listings view (strictly no phone column)
+        const pubRes = await supabase
+          .from("public_listings")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (!pubRes.error && pubRes.data) {
+          data = pubRes.data;
+        } else {
+          // Fallback: select listings with status=active without exposing phone column
+          const fallbackRes = await supabase
+            .from("listings")
+            .select(
+              "id, farmer_id, crop, state, district, mandi, quantity, unit, ask_price, farmer_name, status, created_at, expires_at",
+            )
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(100);
+
+          data = fallbackRes.data;
+          queryErr = fallbackRes.error;
         }
       }
 
@@ -280,14 +323,21 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           fetchSupabaseListings();
         }
       };
+      const handleAuthChange = () => {
+        fetchSupabaseListings();
+      };
 
       window.addEventListener("focus", handleFocus);
       document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("fm:auth-change", handleAuthChange);
+      window.addEventListener("storage", handleAuthChange);
 
       return () => {
         window.clearInterval(pollInterval);
         window.removeEventListener("focus", handleFocus);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("fm:auth-change", handleAuthChange);
+        window.removeEventListener("storage", handleAuthChange);
         supabase.removeChannel(channel);
       };
     } catch (err) {
@@ -332,8 +382,23 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         status: l.status || "active",
       };
 
-      if (l.farmerId) {
+      // Only pass farmer_id if it's a valid UUID (avoids PostgreSQL uuid syntax errors with demo IDs)
+      if (
+        l.farmerId &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          l.farmerId,
+        )
+      ) {
         standardPayload.farmer_id = l.farmerId;
+      } else {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user?.id) {
+            standardPayload.farmer_id = sessionData.session.user.id;
+          }
+        } catch {
+          /* ignore */
+        }
       }
 
       let insertResult = await supabase.from("listings").insert(standardPayload).select().single();

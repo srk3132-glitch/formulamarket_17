@@ -172,10 +172,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const saveUser = useCallback((nextUser: UserProfile | null) => {
     setUser(nextUser);
-    if (nextUser) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== "undefined") {
+      if (nextUser) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+        window.localStorage.setItem("fm-auth-user", JSON.stringify(nextUser));
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.removeItem("fm-auth-user");
+      }
+      window.dispatchEvent(new Event("fm:auth-change"));
     }
   }, []);
 

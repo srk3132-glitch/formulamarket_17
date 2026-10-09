@@ -34,6 +34,9 @@ This migration sets up:
 - **`public.verified_buyer_listings`** & **`get_listing_contact` RPC**: Exposes direct phone numbers only to verified, signed-in buyers.
 - **Realtime Publication**: Executes `ALTER PUBLICATION supabase_realtime ADD TABLE public.listings;` so buyer screens update immediately on inserts.
 
+> **Note**: Verify in **Supabase Dashboard → Database → Publications → `supabase_realtime`** that the `listings` table toggle is turned **ON**.
+> In **Vercel**, after adding `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`, trigger a **Redeploy** of your latest deployment so the environment variables take effect in the production build.
+
 ---
 
 ## 📲 Cross-Device Testing Flow

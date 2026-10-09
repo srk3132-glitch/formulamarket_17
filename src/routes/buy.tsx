@@ -37,6 +37,9 @@ export const Route = createFileRoute("/buy")({
       },
     ],
   }),
+  headers: () => ({
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  }),
   component: BuyPage,
 });
 
