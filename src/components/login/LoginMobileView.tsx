@@ -21,7 +21,7 @@ import {
   PhoneCall,
 } from "lucide-react";
 
-export default function LoginMobileView({ redirect }: { redirect?: string }) {
+export default function LoginMobileView({ redirect }: { redirect?: string | undefined }) {
   const navigate = useNavigate();
   const { t } = useI18n();
   const { user, isAuthenticated, loginAsSeller, loginAsBuyer, quickLoginDemo, logout, switchRole } =

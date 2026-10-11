@@ -17,6 +17,7 @@ import { ListingsProvider } from "../lib/listings-store";
 import { AuthProvider } from "../lib/auth-store";
 import { SlotsProvider } from "../lib/slots-store";
 import { AppLayout } from "../components/layout/AppLayout";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -129,6 +130,7 @@ function RootComponent() {
                 <AppLayout>
                   <Outlet />
                 </AppLayout>
+                <Toaster position="top-right" richColors />
               </SlotsProvider>
             </AuthProvider>
           </ListingsProvider>

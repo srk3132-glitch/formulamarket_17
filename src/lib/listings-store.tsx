@@ -4,244 +4,497 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-export { getCropImage } from "@/lib/crop-images";
+import { getCropImage } from "@/lib/crop-images";
+import { getSupabase, getStoredSupabaseConfig } from "@/lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+
+export { getCropImage };
+
+export type ListingStatus = "active" | "paused" | "sold" | "expired";
 
 export type Listing = {
   id: string;
   cropId: string;
+  crop?: string;
   quantity: number;
+  unit: string;
   price: number;
+  askPrice?: number;
   farmer: string;
+  farmerName?: string;
   phone: string;
   stateId: string;
+  state?: string;
   districtId: string;
+  district?: string;
   placeId: string;
   placeName: string;
+  mandi?: string;
   distanceKm: number;
+  status: ListingStatus;
+  createdAt?: string;
+  expiresAt?: string;
+  farmerId?: string;
+  isRealtimeNew?: boolean;
 };
 
-const SEED: Listing[] = [
-  {
-    id: "l1",
-    cropId: "tomato",
-    quantity: 1,
-    price: 2140,
-    farmer: "Ravi Farms",
-    phone: "+91 98400 11223",
-    stateId: "tn",
-    districtId: "coimbatore",
-    placeId: "kurumbapakkam",
-    placeName: "Kurumbapakkam",
-    distanceKm: 2,
-  },
-  {
-    id: "l2",
-    cropId: "onion",
-    quantity: 5,
-    price: 1480,
-    farmer: "Sulochana Co-op",
-    phone: "+91 94430 55110",
-    stateId: "tn",
-    districtId: "madurai",
-    placeId: "usilampatti",
-    placeName: "Usilampatti Market Yard",
-    distanceKm: 34,
-  },
-  {
-    id: "l3",
-    cropId: "chilli",
-    quantity: 2,
-    price: 14600,
-    farmer: "Prakash Gardens",
-    phone: "+91 90030 77441",
-    stateId: "ap",
-    districtId: "guntur",
-    placeId: "guntur-market",
-    placeName: "Guntur Mirchi Yard (Asia's Largest)",
-    distanceKm: 58,
-  },
-  {
-    id: "l4",
-    cropId: "turmeric",
-    quantity: 12,
-    price: 8100,
-    farmer: "Anjaneyulu N.",
-    phone: "+91 99590 22087",
-    stateId: "ts",
-    districtId: "nizamabad",
-    placeId: "nizamabad-yard",
-    placeName: "Nizamabad APMC Turmeric Yard",
-    distanceKm: 11,
-  },
-  {
-    id: "l5",
-    cropId: "pepper",
-    quantity: 1,
-    price: 57500,
-    farmer: "Maravoor Estate",
-    phone: "+91 97440 31298",
-    stateId: "kl",
-    districtId: "kottayam",
-    placeId: "maravoor",
-    placeName: "Maravoor Estate Yard",
-    distanceKm: 7,
-  },
-  {
-    id: "l6",
-    cropId: "rice",
-    quantity: 30,
-    price: 4290,
-    farmer: "Attur Farmer Group",
-    phone: "+91 93450 66120",
-    stateId: "tn",
-    districtId: "salem",
-    placeId: "attur",
-    placeName: "Attur Sago & Tapioca Mandi",
-    distanceKm: 21,
-  },
-  {
-    id: "l7",
-    cropId: "banana",
-    quantity: 15,
-    price: 1820,
-    farmer: "Kaveri River Orchards",
-    phone: "+91 98421 33445",
-    stateId: "tn",
-    districtId: "coimbatore",
-    placeId: "pollachi",
-    placeName: "Pollachi Coconut & Veg Mandi",
-    distanceKm: 8,
-  },
-  {
-    id: "l8",
-    cropId: "mango",
-    quantity: 25,
-    price: 4400,
-    farmer: "Sri Balaji Mango Grove",
-    phone: "+91 99402 77112",
-    stateId: "ap",
-    districtId: "chittoor",
-    placeId: "chittoor-market",
-    placeName: "Chittoor Mango & Jaggery Market",
-    distanceKm: 42,
-  },
-  {
-    id: "l9",
-    cropId: "tomato",
-    quantity: 18,
-    price: 2180,
-    farmer: "Madanapalle Red Gold Producers",
-    phone: "+91 99890 55432",
-    stateId: "ap",
-    districtId: "chittoor",
-    placeId: "madanapalle",
-    placeName: "Madanapalle Tomato Mandi",
-    distanceKm: 15,
-  },
-  {
-    id: "l10",
-    cropId: "carrot",
-    quantity: 12,
-    price: 3050,
-    farmer: "Ooty Valley Greens",
-    phone: "+91 98403 44556",
-    stateId: "tn",
-    districtId: "nilgiris",
-    placeId: "ooty",
-    placeName: "Udhagamandalam (Ooty) Vegetable Yard",
-    distanceKm: 14,
-  },
-  {
-    id: "l11",
-    cropId: "pomegranate",
-    quantity: 8,
-    price: 9400,
-    farmer: "Deccan Fruit Producers",
-    phone: "+91 98850 66778",
-    stateId: "ts",
-    districtId: "rangareddy",
-    placeId: "bowenpally",
-    placeName: "Bowenpally Wholesale Veg Mandi",
-    distanceKm: 32,
-  },
-  {
-    id: "l12",
-    cropId: "pineapple",
-    quantity: 20,
-    price: 3150,
-    farmer: "Vazhakulam Pineapple Growers",
-    phone: "+91 94470 88211",
-    stateId: "kl",
-    districtId: "ernakulam",
-    placeId: "muvattupuzha",
-    placeName: "Muvattupuzha Vazhakulam Pineapple Market",
-    distanceKm: 18,
-  },
-  {
-    id: "l13",
-    cropId: "cotton",
-    quantity: 35,
-    price: 7100,
-    farmer: "Enumamula Cotton Rythu Sangham",
-    phone: "+91 98490 33412",
-    stateId: "ts",
-    districtId: "warangal",
-    placeId: "enumamula",
-    placeName: "Enumamula Market Yard",
-    distanceKm: 9,
-  },
-  {
-    id: "l14",
-    cropId: "pepper",
-    quantity: 4,
-    price: 58200,
-    farmer: "Wayanad Highland Spice Estate",
-    phone: "+91 97451 22904",
-    stateId: "kl",
-    districtId: "wayanad",
-    placeId: "sulthan-bathery",
-    placeName: "Sulthan Bathery Coffee & Pepper Yard",
-    distanceKm: 25,
-  },
-];
+// Database row mapping helper supporting both standard and legacy schemas
+export function mapDbToListing(row: Record<string, unknown>): Listing {
+  const crop = String(row["crop"] || row["crop_id"] || row["cropId"] || "tomato");
+  const state = String(row["state"] || row["state_id"] || row["stateId"] || "tn");
+  const district = String(row["district"] || row["district_id"] || row["districtId"] || "");
+  const mandi = String(row["mandi"] || row["place_name"] || row["placeName"] || "");
+  const farmer = String(row["farmer_name"] || row["farmer"] || "Farmer");
+  const price = Number(row["ask_price"] ?? row["price"] ?? 0);
+  const quantity = Number(row["quantity"] ?? 1);
+  const unit = String(row["unit"] || "quintal");
+  const status: ListingStatus = (row["status"] as ListingStatus) || "active";
 
-type ListingsContextValue = {
+  const listing: Listing = {
+    id: String(row["id"] || `lst_${Date.now()}`),
+    cropId: crop,
+    crop,
+    quantity,
+    unit,
+    price,
+    askPrice: price,
+    farmer,
+    farmerName: farmer,
+    phone: String(row["phone"] || ""),
+    stateId: state,
+    state,
+    districtId: district,
+    district,
+    placeId: String(row["place_id"] || mandi.toLowerCase().replace(/\s+/g, "-")),
+    placeName: mandi,
+    mandi,
+    distanceKm: Number(row["distance_km"] ?? 5),
+    status,
+    createdAt: typeof row["created_at"] === "string" ? row["created_at"] : new Date().toISOString(),
+    isRealtimeNew: Boolean(row["isRealtimeNew"]),
+  };
+
+  if (typeof row["expires_at"] === "string") {
+    listing.expiresAt = row["expires_at"];
+  }
+  if (typeof row["farmer_id"] === "string") {
+    listing.farmerId = row["farmer_id"];
+  }
+
+  return listing;
+}
+
+export type RealtimeStatus = "connected" | "connecting" | "offline";
+
+interface ListingsContextValue {
   listings: Listing[];
-  addListing: (l: Omit<Listing, "id" | "distanceKm">) => void;
-};
+  isLoading: boolean;
+  error: string | null;
+  addListing: (l: {
+    cropId: string;
+    quantity: number;
+    unit?: string;
+    price: number;
+    farmer: string;
+    phone: string;
+    stateId: string;
+    districtId: string;
+    placeId?: string;
+    placeName: string;
+    farmerId?: string;
+    status?: ListingStatus;
+  }) => Promise<Listing>;
+  realtimeStatus: RealtimeStatus;
+  isSupabaseReady: boolean;
+  latestNewListing: Listing | null;
+  newListingAlertCount: number;
+  clearLatestListing: () => void;
+  refreshListings: () => Promise<void>;
+}
 
 const ListingsContext = createContext<ListingsContextValue | null>(null);
 
 export function ListingsProvider({ children }: { children: ReactNode }) {
-  const [added, setAdded] = useState<Listing[]>([]);
+  const [dbListings, setDbListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>("connecting");
+  const [isSupabaseReady, setIsSupabaseReady] = useState<boolean>(false);
+  const [latestNewListing, setLatestNewListing] = useState<Listing | null>(null);
+  const [newListingAlertCount, setNewListingAlertCount] = useState<number>(0);
 
-  useEffect(() => {
-    const raw = window.localStorage.getItem("kb-listings");
-    if (!raw) return;
+  const supabaseChannelRef = useRef<RealtimeChannel | null>(null);
+
+  // Fetch listings from Supabase (shared centralized database)
+  const fetchSupabaseListings = useCallback(async () => {
+    const supabase = getSupabase();
+    const config = getStoredSupabaseConfig();
+    setIsSupabaseReady(config.isConfigured);
+
+    if (!supabase || !config.isConfigured) {
+      setRealtimeStatus("offline");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      setAdded(JSON.parse(raw) as Listing[]);
-    } catch {
-      /* ignore malformed value */
+      // Check auth status: authenticated users can query verified_buyer_listings (which includes phone)
+      // anonymous users query public_listings (which hides phone column)
+      let isAuthenticatedUser = false;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        isAuthenticatedUser = Boolean(sessionData?.session?.user);
+      } catch {
+        /* ignore */
+      }
+      if (!isAuthenticatedUser && typeof window !== "undefined") {
+        try {
+          const localUser = window.localStorage.getItem("fm-auth-user");
+          isAuthenticatedUser = Boolean(localUser);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      let data: Record<string, unknown>[] | null = null;
+      let queryErr: { message: string } | null = null;
+
+      if (isAuthenticatedUser) {
+        // 1. Authenticated users: try verified_buyer_listings view (includes farmer phone)
+        const verifiedRes = await supabase
+          .from("verified_buyer_listings")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (!verifiedRes.error && verifiedRes.data) {
+          data = verifiedRes.data;
+        } else {
+          // Fallback to listings table with phone
+          const listRes = await supabase
+            .from("listings")
+            .select("*")
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(100);
+
+          if (!listRes.error && listRes.data) {
+            data = listRes.data;
+          } else {
+            // Fallback to public_listings
+            const pubRes = await supabase
+              .from("public_listings")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(100);
+            data = pubRes.data;
+            queryErr = pubRes.error;
+          }
+        }
+      } else {
+        // 2. Anonymous / signed-out users: query public_listings view (strictly no phone column)
+        const pubRes = await supabase
+          .from("public_listings")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (!pubRes.error && pubRes.data) {
+          data = pubRes.data;
+        } else {
+          // Fallback: select listings with status=active without exposing phone column
+          const fallbackRes = await supabase
+            .from("listings")
+            .select(
+              "id, farmer_id, crop, state, district, mandi, quantity, unit, ask_price, farmer_name, status, created_at, expires_at",
+            )
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(100);
+
+          data = fallbackRes.data;
+          queryErr = fallbackRes.error;
+        }
+      }
+
+      if (queryErr) {
+        console.warn("[Supabase listings query error]:", queryErr.message);
+        setError(queryErr.message);
+        setRealtimeStatus("offline");
+      } else if (data) {
+        const mapped = data.map((d: Record<string, unknown>) => mapDbToListing(d));
+        setDbListings(mapped);
+        setError(null);
+        setRealtimeStatus("connected");
+      }
+    } catch (err: unknown) {
+      console.warn("Failed to fetch listings from Supabase:", err);
+      setError(err instanceof Error ? err.message : "Failed to load listings");
+      setRealtimeStatus("offline");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const addListing = useCallback((l: Omit<Listing, "id" | "distanceKm">) => {
-    setAdded((prev) => {
-      const next = [
-        { ...l, id: `u${Date.now()}`, distanceKm: Math.round(1 + Math.random() * 9) },
-        ...prev,
-      ];
-      window.localStorage.setItem("kb-listings", JSON.stringify(next));
-      return next;
-    });
+  // Set up Realtime subscription + 15s fallback polling + tab focus refetch
+  useEffect(() => {
+    fetchSupabaseListings();
+
+    const supabase = getSupabase();
+    const config = getStoredSupabaseConfig();
+
+    if (!supabase || !config.isConfigured) return;
+
+    let cleanup: (() => void) | undefined;
+    try {
+      const channel = supabase
+        .channel("realtime-shared-listings")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "listings" },
+          (payload: { new: Record<string, unknown> }) => {
+            const newRow = payload.new;
+            if (newRow && (!newRow["status"] || newRow["status"] === "active")) {
+              const newListing = mapDbToListing({
+                ...newRow,
+                isRealtimeNew: true,
+              });
+              setDbListings((prev) => {
+                if (prev.some((x) => x.id === newListing.id)) return prev;
+                return [newListing, ...prev];
+              });
+              setLatestNewListing(newListing);
+              setNewListingAlertCount((c) => c + 1);
+            }
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "listings" },
+          (payload: { new: Record<string, unknown> }) => {
+            const updatedRow = payload.new;
+            if (updatedRow) {
+              const updated = mapDbToListing(updatedRow);
+              setDbListings((prev) =>
+                prev.map((item) => (item.id === updated.id ? updated : item)),
+              );
+            }
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "listings" },
+          (payload: { old: Record<string, unknown> }) => {
+            const deletedId = String(payload.old?.["id"]);
+            setDbListings((prev) => prev.filter((x) => x.id !== deletedId));
+          },
+        )
+        .on("broadcast", { event: "new_listing" }, ({ payload }: { payload: Record<string, unknown> }) => {
+          if (payload) {
+            const newListing = mapDbToListing({
+              ...payload,
+              isRealtimeNew: true,
+            });
+            setDbListings((prev) => {
+              if (prev.some((x) => x.id === newListing.id)) return prev;
+              return [newListing, ...prev];
+            });
+            setLatestNewListing(newListing);
+            setNewListingAlertCount((c) => c + 1);
+          }
+        })
+        .subscribe((status: string) => {
+          if (status === "SUBSCRIBED") {
+            setRealtimeStatus("connected");
+          } else if (status === "CHANNEL_ERROR") {
+            setRealtimeStatus("offline");
+          }
+        });
+
+      supabaseChannelRef.current = channel;
+
+      // Fallback Polling every 15 seconds to ensure fresh data across devices
+      const pollInterval = window.setInterval(() => {
+        fetchSupabaseListings();
+      }, 15000);
+
+      // Refetch when tab regains focus or visibility
+      const handleFocus = () => {
+        fetchSupabaseListings();
+      };
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          fetchSupabaseListings();
+        }
+      };
+      const handleAuthChange = () => {
+        fetchSupabaseListings();
+      };
+
+      window.addEventListener("focus", handleFocus);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("fm:auth-change", handleAuthChange);
+      window.addEventListener("storage", handleAuthChange);
+
+      cleanup = () => {
+        window.clearInterval(pollInterval);
+        window.removeEventListener("focus", handleFocus);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("fm:auth-change", handleAuthChange);
+        window.removeEventListener("storage", handleAuthChange);
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn("Error subscribing to Supabase Realtime:", err);
+    }
+    return cleanup;
+  }, [fetchSupabaseListings]);
+
+  // addListing: persists into shared Supabase database and broadcasts across all devices
+  const addListing = useCallback(
+    async (l: {
+      cropId: string;
+      quantity: number;
+      unit?: string;
+      price: number;
+      farmer: string;
+      phone: string;
+      stateId: string;
+      districtId: string;
+      placeId?: string;
+      placeName: string;
+      farmerId?: string;
+      status?: ListingStatus;
+    }): Promise<Listing> => {
+      const supabase = getSupabase();
+      if (!supabase) {
+        throw new Error(
+          "Supabase database connection is not configured. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+        );
+      }
+
+      // 1. Primary insert payload according to standard schema
+      const standardPayload: Record<string, unknown> = {
+        crop: l.cropId,
+        state: l.stateId,
+        district: l.districtId,
+        mandi: l.placeName,
+        quantity: Number(l.quantity) || 1,
+        unit: l.unit || "quintal",
+        ask_price: Number(l.price) || 0,
+        farmer_name: l.farmer,
+        phone: l.phone,
+        status: l.status || "active",
+      };
+
+      // Only pass farmer_id if it's a valid UUID (avoids PostgreSQL uuid syntax errors with demo IDs)
+      if (
+        l.farmerId &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          l.farmerId,
+        )
+      ) {
+        standardPayload["farmer_id"] = l.farmerId;
+      } else {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user?.id) {
+            standardPayload["farmer_id"] = sessionData.session.user.id;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      let insertResult = await supabase.from("listings").insert(standardPayload).select().single();
+
+      // 2. If new columns don't exist yet (migration pending), fallback to legacy column names
+      if (insertResult.error && insertResult.error.message?.includes("column")) {
+        console.warn(
+          "Column mismatch on standard insert, attempting legacy schema insert:",
+          insertResult.error.message,
+        );
+        const legacyPayload = {
+          crop_id: l.cropId,
+          state_id: l.stateId,
+          district_id: l.districtId,
+          place_id: l.placeId || l.districtId,
+          place_name: l.placeName,
+          quantity: Number(l.quantity) || 1,
+          price: Number(l.price) || 0,
+          farmer: l.farmer,
+          phone: l.phone,
+        };
+
+        insertResult = await supabase.from("listings").insert(legacyPayload).select().single();
+      }
+
+      if (insertResult.error) {
+        console.error("[Supabase Insert Error]:", insertResult.error);
+        throw new Error(insertResult.error.message || "Failed to post listing to database.");
+      }
+
+      const savedListing = mapDbToListing({
+        ...insertResult.data,
+        isRealtimeNew: true,
+      });
+
+      // Update local state immediately so publisher sees their listing instantly
+      setDbListings((prev) => [savedListing, ...prev.filter((x) => x.id !== savedListing.id)]);
+      setLatestNewListing(savedListing);
+      setNewListingAlertCount((c) => c + 1);
+
+      // Broadcast to all active devices listening via Supabase Realtime
+      if (supabaseChannelRef.current) {
+        try {
+          supabaseChannelRef.current.send({
+            type: "broadcast",
+            event: "new_listing",
+            payload: insertResult.data,
+          });
+        } catch {
+          /* ignore broadcast send errors */
+        }
+      }
+
+      return savedListing;
+    },
+    [],
+  );
+
+  const clearLatestListing = useCallback(() => {
+    setLatestNewListing(null);
   }, []);
 
   const value = useMemo<ListingsContextValue>(
-    () => ({ listings: [...added, ...SEED], addListing }),
-    [added, addListing],
+    () => ({
+      listings: dbListings,
+      isLoading,
+      error,
+      addListing,
+      realtimeStatus,
+      isSupabaseReady,
+      latestNewListing,
+      newListingAlertCount,
+      clearLatestListing,
+      refreshListings: fetchSupabaseListings,
+    }),
+    [
+      dbListings,
+      isLoading,
+      error,
+      addListing,
+      realtimeStatus,
+      isSupabaseReady,
+      latestNewListing,
+      newListingAlertCount,
+      clearLatestListing,
+      fetchSupabaseListings,
+    ],
   );
 
   return <ListingsContext.Provider value={value}>{children}</ListingsContext.Provider>;

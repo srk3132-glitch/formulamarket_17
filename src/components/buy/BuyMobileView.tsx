@@ -16,12 +16,19 @@ import {
   Sprout,
   ArrowRight,
   ArrowRightLeft,
+  RefreshCw,
 } from "lucide-react";
 
 export default function BuyMobileView() {
   const { t, lang } = useI18n();
   const { region, placeName, districtName, stateName } = useRegion();
-  const { listings } = useListings();
+  const {
+    listings,
+    isLoading,
+    refreshListings,
+    latestNewListing,
+    clearLatestListing,
+  } = useListings();
   const { user, isAuthenticated, switchRole, quickLoginDemo } = useAuth();
 
   const [filterQuery, setFilterQuery] = useState("");
@@ -44,6 +51,33 @@ export default function BuyMobileView() {
 
   return (
     <div className="flex flex-col gap-4 px-3.5 pt-3 pb-8">
+      {/* Realtime Live Arrival Banner */}
+      {latestNewListing && (
+        <div className="flex items-center justify-between gap-2.5 rounded-2xl border border-emerald-500/40 bg-emerald-50/90 p-3 shadow-xs animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2">
+            <span className="relative flex size-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex size-2.5 rounded-full bg-emerald-600"></span>
+            </span>
+            <div>
+              <p className="text-[11px] font-bold text-emerald-950">
+                ⚡ Just Listed: {latestNewListing.farmer} posted {latestNewListing.quantity}q of {cropName(latestNewListing.cropId, lang)}!
+              </p>
+              <p className="text-[10px] text-emerald-900/70">
+                {latestNewListing.placeName} · Synced live
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={clearLatestListing}
+            className="rounded-lg bg-emerald-200/60 px-2 py-0.5 text-[10px] font-bold text-emerald-900"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Header Banner */}
       <section className="rounded-2xl border border-amber-600/20 bg-white/80 p-4 shadow-xs backdrop-blur-xl">
         <div className="flex items-center justify-between">
@@ -51,7 +85,15 @@ export default function BuyMobileView() {
             <Store className="size-3.5" />
             Procurement Marketplace
           </span>
-          <span className="text-[10px] text-brand-deep/60">Farm-Gate Direct</span>
+          <button
+            type="button"
+            onClick={() => refreshListings()}
+            disabled={isLoading}
+            className="inline-flex items-center gap-1 rounded-lg border border-brand/20 bg-white/90 px-2 py-1 text-[11px] font-bold text-brand"
+          >
+            <RefreshCw className={`size-3 text-brand ${isLoading ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
+          </button>
         </div>
 
         <h1 className="mt-2 font-display text-xl font-bold text-brand-deep">

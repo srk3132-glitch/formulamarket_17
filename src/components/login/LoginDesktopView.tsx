@@ -30,8 +30,8 @@ export default function LoginDesktopView({
   initialRole,
   redirect,
 }: {
-  initialRole?: UserRole;
-  redirect?: string;
+  initialRole?: UserRole | undefined;
+  redirect?: string | undefined;
 }) {
   const navigate = useNavigate();
   const { t } = useI18n();

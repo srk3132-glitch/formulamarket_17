@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
 
@@ -237,7 +237,6 @@
     display: none;
   }
 }
-
 @utility pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
@@ -254,3 +253,4 @@
     font-size: 16px !important;
   }
 }
+

@@ -19,16 +19,19 @@ export function RegionSelector({ layout = "grid" }: RegionSelectorProps) {
       ? "flex flex-col gap-3 text-sm"
       : "grid grid-cols-1 gap-2.5 text-sm sm:grid-cols-3";
 
+  const selectClass =
+    "w-full min-w-0 truncate min-h-[48px] appearance-none rounded-xl border border-brand-deep/20 bg-white/90 px-3.5 py-3 pr-9 text-base sm:text-sm font-semibold text-brand-deep shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition cursor-pointer";
+
   return (
     <div className={containerClass}>
       {/* State Selection */}
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-brand-deep/70">
           {t("state")}
         </span>
         <div className="relative">
           <select
-            className="w-full min-h-[48px] appearance-none rounded-xl border border-brand-deep/20 bg-white/90 px-3.5 py-3 pr-9 text-base sm:text-sm font-semibold text-brand-deep shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition cursor-pointer"
+            className={selectClass}
             value={state.id}
             onChange={(e) => {
               const next = findState(e.target.value);
@@ -48,13 +51,13 @@ export function RegionSelector({ layout = "grid" }: RegionSelectorProps) {
       </label>
 
       {/* District Selection */}
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-brand-deep/70">
           {t("district")}
         </span>
         <div className="relative">
           <select
-            className="w-full min-h-[48px] appearance-none rounded-xl border border-brand-deep/20 bg-white/90 px-3.5 py-3 pr-9 text-base sm:text-sm font-semibold text-brand-deep shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition cursor-pointer"
+            className={selectClass}
             value={district.id}
             onChange={(e) => {
               const d = findDistrict(state.id, e.target.value);
@@ -73,13 +76,13 @@ export function RegionSelector({ layout = "grid" }: RegionSelectorProps) {
       </label>
 
       {/* Place / Mandi Selection */}
-      <label className="block">
+      <label className="block min-w-0">
         <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-brand-deep/70">
           {t("place")}
         </span>
         <div className="relative">
           <select
-            className="w-full min-h-[48px] appearance-none rounded-xl border border-brand-deep/20 bg-white/90 px-3.5 py-3 pr-9 text-base sm:text-sm font-semibold text-brand-deep shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition cursor-pointer"
+            className={selectClass}
             value={region.placeId}
             onChange={(e) =>
               setRegion({ stateId: state.id, districtId: district.id, placeId: e.target.value })

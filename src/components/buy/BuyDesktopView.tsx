@@ -3,23 +3,43 @@ import { Link } from "@tanstack/react-router";
 import { InterfaceModeNav } from "@/components/InterfaceModeNav";
 import { RegionSelector } from "@/components/RegionSelector";
 import { ListingCard } from "@/components/ListingCard";
-import { useI18n, cropName } from "@/lib/i18n";
+import { useI18n, cropName, CROPS } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-store";
 import { useListings } from "@/lib/listings-store";
 import { useAuth } from "@/lib/auth-store";
-import { Store, Sprout, ArrowRightLeft, Building2, Search, Filter, ArrowRight } from "lucide-react";
+import {
+  Store,
+  Sprout,
+  ArrowRightLeft,
+  Building2,
+  Search,
+  Filter,
+  ArrowRight,
+  RefreshCw,
+  AlertCircle,
+} from "lucide-react";
 
 export default function BuyDesktopView() {
   const { t, lang } = useI18n();
   const { region, placeName, districtName, stateName } = useRegion();
-  const { listings } = useListings();
+  const {
+    listings,
+    isLoading,
+    error,
+    refreshListings,
+    latestNewListing,
+    newListingAlertCount,
+    clearLatestListing,
+  } = useListings();
   const { user, isAuthenticated, switchRole, quickLoginDemo } = useAuth();
   const [filterQuery, setFilterQuery] = useState("");
+  const [filterCrop, setFilterCrop] = useState<string>("all");
 
   const inRegion = listings.filter((l) => l.stateId === region.stateId);
   const baseListings = inRegion.length > 0 ? inRegion : listings;
 
   const shown = baseListings.filter((l) => {
+    if (filterCrop !== "all" && l.cropId !== filterCrop) return false;
     if (!filterQuery.trim()) return true;
     const q = filterQuery.toLowerCase();
     const localized = cropName(l.cropId, lang).toLowerCase();
@@ -54,12 +74,25 @@ export default function BuyDesktopView() {
             </p>
           </div>
 
-          {isAuthenticated && user?.role === "buyer" ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-              <Store className="size-3.5" />
-              {t("loggedAsBuyer")}
-            </span>
-          ) : null}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refreshListings()}
+              disabled={isLoading}
+              title="Refresh listings"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-brand/20 bg-white/80 px-3 py-1.5 text-xs font-semibold text-brand-deep shadow-2xs hover:bg-white transition"
+            >
+              <RefreshCw className={`size-3.5 text-brand ${isLoading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
+
+            {isAuthenticated && user?.role === "buyer" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
+                <Store className="size-3.5" />
+                {t("loggedAsBuyer")}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Auth prompt if unauthenticated */}
@@ -103,6 +136,25 @@ export default function BuyDesktopView() {
               </h2>
             </div>
 
+            {/* Crop Filter */}
+            <div className="mt-4">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-deep/60">
+                Crop
+              </p>
+              <select
+                value={filterCrop}
+                onChange={(e) => setFilterCrop(e.target.value)}
+                className="w-full rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-xs font-semibold text-brand-deep outline-none focus:border-brand"
+              >
+                <option value="all">All Crops (सभी फसलें)</option>
+                {CROPS.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {cropName(c.id, lang)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Region Selector */}
             <div className="mt-4">
               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-brand-deep/60">
@@ -134,12 +186,64 @@ export default function BuyDesktopView() {
 
         {/* Right Listings Grid */}
         <section className="space-y-4">
+          {/* Realtime Live Arrival Banner */}
+          {latestNewListing && (
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-50/90 p-3.5 shadow-sm backdrop-blur-xl animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex size-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex size-3 rounded-full bg-emerald-600"></span>
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-emerald-950">
+                    ⚡ Just Listed in Real-Time: {latestNewListing.farmer} posted{" "}
+                    {latestNewListing.quantity} quintal(s) of {cropName(latestNewListing.cropId, lang)}!
+                  </p>
+                  <p className="text-[11px] text-emerald-900/70">
+                    Location: {latestNewListing.placeName} · Shared across all devices instantly.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={clearLatestListing}
+                className="rounded-lg bg-emerald-200/60 px-2.5 py-1 text-[11px] font-semibold text-emerald-900 hover:bg-emerald-200 transition"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="rounded-2xl border border-red-200 bg-red-50/90 p-4 text-xs text-red-900 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="size-4 text-red-600 shrink-0" />
+                <span>Could not sync listings from database: {error}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => refreshListings()}
+                className="rounded-lg bg-red-600 px-3 py-1 font-semibold text-white hover:bg-red-700 transition"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Search bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/60 p-3 shadow-xs backdrop-blur-xl">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-brand-deep/70">
-                Available Farm Lots ({shown.length})
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-brand-deep/70">
+                  Available Farm Lots ({shown.length})
+                </p>
+                {newListingAlertCount > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 animate-pulse">
+                    +{newListingAlertCount} Live Ingested
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-brand-deep/50">
                 Direct farm-gate harvests with verified farmer contacts
               </p>
@@ -157,21 +261,49 @@ export default function BuyDesktopView() {
             </div>
           </div>
 
-          {shown.length === 0 ? (
+          {isLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((idx) => (
+                <div
+                  key={idx}
+                  className="overflow-hidden rounded-3xl border border-white/70 bg-white/40 p-4 shadow-sm animate-pulse"
+                >
+                  <div className="aspect-[4/3] w-full rounded-2xl bg-gray-200/70" />
+                  <div className="mt-3 h-4 w-3/4 rounded bg-gray-200/80" />
+                  <div className="mt-2 h-3 w-1/2 rounded bg-gray-200/60" />
+                  <div className="mt-4 h-9 w-full rounded-xl bg-gray-200/70" />
+                </div>
+              ))}
+            </div>
+          ) : shown.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-brand-deep/20 bg-white/40 p-10 text-center">
               <p className="font-display text-lg font-semibold text-brand-deep">
-                No lots match your search
+                {filterCrop !== "all"
+                  ? `No listings yet for ${cropName(filterCrop, lang)}`
+                  : "No lots match your search"}
               </p>
               <p className="mt-1 text-xs text-brand-deep/60">
-                Try clearing the search query or select a neighbouring district.
+                Try clearing your search/filters or select a neighbouring district.
               </p>
-              <button
-                type="button"
-                onClick={() => setFilterQuery("")}
-                className="mt-3 rounded-xl bg-amber-800 px-4 py-2 text-xs font-semibold text-white"
-              >
-                Clear Search
-              </button>
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterQuery("");
+                    setFilterCrop("all");
+                  }}
+                  className="rounded-xl bg-amber-800 px-4 py-2 text-xs font-semibold text-white"
+                >
+                  Clear Filters
+                </button>
+                <Link
+                  to="/sell"
+                  className="rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-brand/90 transition inline-flex items-center gap-1.5"
+                >
+                  <Sprout className="size-3.5" />
+                  Post Harvest
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

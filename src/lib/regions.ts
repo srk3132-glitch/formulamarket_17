@@ -1,4 +1,31 @@
-export type Lang = "en" | "hi" | "ta" | "te" | "kn" | "ml" | "mr" | "bn" | "gu" | "pa" | "or";
+export type Lang =
+  | "en"
+  | "hi"
+  | "bn"
+  | "te"
+  | "mr"
+  | "ta"
+  | "ur"
+  | "gu"
+  | "kn"
+  | "or"
+  | "ml"
+  | "pa"
+  | "as"
+  | "mai"
+  | "bho"
+  | "sat"
+  | "ks"
+  | "ne"
+  | "kok"
+  | "sd"
+  | "doi"
+  | "mni"
+  | "brx"
+  | "sa"
+  | "mwr"
+  | "hne"
+  | "bgc";
 
 export type Place = { id: string; name: string };
 export type District = { id: string; name: string; places: Place[] };
