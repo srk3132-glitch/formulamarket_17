@@ -1,10 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { TrendingUp, ShoppingBag, PlusCircle } from "lucide-react";
+import { TrendingUp, ShoppingBag, PlusCircle, Calendar } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-store";
 
 interface InterfaceModeNavProps {
-  currentMode: "rates" | "buy" | "sell";
+  currentMode: "rates" | "buy" | "sell" | "slots";
 }
 
 export function InterfaceModeNav({ currentMode }: InterfaceModeNavProps) {
@@ -91,6 +91,33 @@ export function InterfaceModeNav({ currentMode }: InterfaceModeNavProps) {
               }`}
             >
               0% commission farmer direct
+            </p>
+          </div>
+        </Link>
+
+        {/* 4. Slot Booking Interface */}
+        <Link
+          to="/slots"
+          className={`relative flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-300 active:scale-[0.98] ${
+            currentMode === "slots"
+              ? "bg-blue-700 text-white shadow-md ring-1 ring-blue-800/40 scale-[1.01]"
+              : "text-brand-deep/70 hover:bg-white/80 hover:text-brand-deep hover:-translate-y-0.5"
+          }`}
+        >
+          {currentMode === "slots" && (
+            <span className="livedot absolute top-2 right-2.5 size-2 rounded-full bg-blue-300" />
+          )}
+          <Calendar
+            className={`size-4 transition-transform duration-300 ${currentMode === "slots" ? "scale-110 text-blue-300" : ""}`}
+          />
+          <div className="text-left leading-tight">
+            <p className="font-bold tracking-tight">Slot Booking</p>
+            <p
+              className={`text-[10px] hidden sm:block transition-opacity duration-300 ${
+                currentMode === "slots" ? "text-blue-100" : "text-brand-deep/50"
+              }`}
+            >
+              Weighbridge gate pass & SMS
             </p>
           </div>
         </Link>

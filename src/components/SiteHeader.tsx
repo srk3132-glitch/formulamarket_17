@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { LANGS, useI18n } from "@/lib/i18n";
+import {  LANGS, useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-store";
 import {
   Sprout,
@@ -80,6 +80,13 @@ export function SiteHeader() {
             className="transition hover:text-brand"
           >
             {t("navSell")}
+          </Link>
+          <Link
+            to="/slots"
+            activeProps={{ className: "text-ink font-bold border-b-2 border-blue-700 pb-0.5" }}
+            className="transition hover:text-brand"
+          >
+            {t("navSlots") || "Slot Booking"}
           </Link>
           <Link
             to="/how-it-works"
@@ -431,6 +438,13 @@ export function SiteHeader() {
               className="px-2 py-1.5 rounded-lg hover:bg-brand/10 transition"
             >
               {t("navBuy")}
+            </Link>
+            <Link
+              to="/slots"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-2 py-1.5 rounded-lg hover:bg-brand/10 transition font-semibold text-teal-800"
+            >
+              🎟️ {t("navSlots") || "Slot Booking"}
             </Link>
             <Link
               to="/how-it-works"

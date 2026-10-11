@@ -15,7 +15,8 @@ import { LanguageProvider, useI18n } from "../lib/i18n";
 import { RegionProvider } from "../lib/region-store";
 import { ListingsProvider } from "../lib/listings-store";
 import { AuthProvider } from "../lib/auth-store";
-import { SiteHeader } from "../components/SiteHeader";
+import { SlotsProvider } from "../lib/slots-store";
+import { AppLayout } from "../components/layout/AppLayout";
 
 function NotFoundComponent() {
   return (
@@ -91,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans+Telugu:wght@400;500;600&family=Noto+Sans+Malayalam:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans+Telugu:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;500;600&family=Noto+Sans+Malayalam:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Sans+Gujarati:wght@400;500;600&family=Noto+Sans+Gurmukhi:wght@400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -115,7 +116,6 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -125,30 +125,15 @@ function RootComponent() {
         <RegionProvider>
           <ListingsProvider>
             <AuthProvider>
-              <div className="relative min-h-screen overflow-hidden text-ink">
-                <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                  <div className="glow-1 absolute -left-32 -top-40 h-[520px] w-[520px] rounded-full bg-brand/30 blur-3xl" />
-                  <div className="glow-2 absolute -right-40 top-1/3 h-[560px] w-[560px] rounded-full bg-accent/25 blur-3xl" />
-                  <div className="absolute bottom-0 left-1/4 h-[420px] w-[420px] rounded-full bg-brand-deep/20 blur-3xl" />
-                </div>
-                <SiteHeader />
-                {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-                <Outlet />
-                <SiteFooter />
-              </div>
+              <SlotsProvider>
+                <AppLayout>
+                  <Outlet />
+                </AppLayout>
+              </SlotsProvider>
             </AuthProvider>
           </ListingsProvider>
         </RegionProvider>
       </LanguageProvider>
     </QueryClientProvider>
-  );
-}
-
-function SiteFooter() {
-  const { t } = useI18n();
-  return (
-    <footer className="relative z-10 mx-auto max-w-6xl px-5 pb-10 text-center text-xs text-brand-deep/55">
-      {t("footer")}
-    </footer>
   );
 }
