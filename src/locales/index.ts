@@ -7,7 +7,8 @@ export interface LanguageMeta {
   nativeName: string;
   dir: "ltr" | "rtl";
   speechLang: string;
-  fontFamily: string;
+  fontFamily?: string;
+  font?: string;
 }
 
 export const LANGUAGES_26: LanguageMeta[] = [

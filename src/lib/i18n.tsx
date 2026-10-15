@@ -1422,7 +1422,7 @@ function applyLangDocumentStyles(l: Lang) {
   document.documentElement.setAttribute("data-lang", l);
   const meta = LANGUAGES_26.find((item) => item.code === l);
   if (meta) {
-    document.documentElement.style.setProperty("--font-current-script", meta.fontFamily);
+    document.documentElement.style.setProperty("--font-current-script", meta.fontFamily || meta.font || "");
   }
 }
 
@@ -1461,18 +1461,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       setLang,
-<<<<<<< HEAD
       t: (key: string) => {
         const localeDict = ALL_LOCALES[lang];
         if (localeDict && localeDict[key]) return localeDict[key];
         if (DICTS[lang] && DICTS[lang][key]) return DICTS[lang][key];
-        const enLocale = ALL_LOCALES.en;
+        const enLocale = ALL_LOCALES["en"];
         if (enLocale && enLocale[key]) return enLocale[key];
-        return DICTS.en[key] ?? key;
+        return DICTS["en"]?.[key] ?? key;
       },
-=======
-      t: (key: string) => DICTS[lang]?.[key] ?? DICTS["en"]?.[key] ?? key,
->>>>>>> 0d43f03ed679adadd3c4a4000a3093cda96c9fcb
     }),
     [lang, setLang],
   );

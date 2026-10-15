@@ -237,8 +237,6 @@
     display: none;
   }
 }
-<<<<<<< HEAD
-
 /* Indian Language Script Fonts & RTL Support */
 [data-lang="hi"], [data-lang="mr"], [data-lang="ne"], [data-lang="sa"],
 [data-lang="bho"], [data-lang="mai"], [data-lang="doi"], [data-lang="kok"],
@@ -285,7 +283,8 @@
 [dir="rtl"] {
   direction: rtl;
   text-align: right;
-=======
+}
+
 @utility pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
@@ -301,6 +300,5 @@
   textarea {
     font-size: 16px !important;
   }
->>>>>>> 0d43f03ed679adadd3c4a4000a3093cda96c9fcb
 }
 

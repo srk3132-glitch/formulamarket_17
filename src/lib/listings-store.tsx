@@ -36,10 +36,10 @@ export type Listing = {
   mandi?: string;
   distanceKm: number;
   status: ListingStatus;
-  createdAt?: string;
-  expiresAt?: string;
-  farmerId?: string;
-  isRealtimeNew?: boolean;
+  createdAt?: string | undefined;
+  expiresAt?: string | undefined;
+  farmerId?: string | undefined;
+  isRealtimeNew?: boolean | undefined;
 };
 
 // Database row mapping helper supporting both standard and legacy schemas

@@ -78,7 +78,7 @@ export function useTranslation() {
       document.documentElement.lang = currentMeta.code;
       document.documentElement.dir = isRTL ? "rtl" : "ltr";
       document.documentElement.setAttribute("data-lang", currentMeta.code);
-      document.documentElement.style.setProperty("--font-current-script", currentMeta.fontFamily);
+      document.documentElement.style.setProperty("--font-current-script", currentMeta.fontFamily || currentMeta.font || "");
     }
   }, [currentMeta]);
 

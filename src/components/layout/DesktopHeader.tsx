@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { LANGS, useI18n } from "@/lib/i18n";
+import { HorizontalLanguageSelector } from "@/components/common/HorizontalLanguageSelector";
 import { useAuth } from "@/lib/auth-store";
 import {
   Sprout,
@@ -63,7 +64,7 @@ export function DesktopHeader() {
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex items-center gap-7 text-sm font-medium text-brand-deep/80">
+        <div className="hidden lg:flex items-center gap-4 xl:gap-7 text-sm font-medium text-brand-deep/80 shrink-0">
           <Link
             to="/rates"
             activeProps={{ className: "text-ink font-bold border-b-2 border-teal-700 pb-0.5" }}
@@ -102,7 +103,7 @@ export function DesktopHeader() {
         </div>
 
         {/* Right Section: Auth & Language Switcher */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 justify-end max-w-full">
           {/* Authenticated User Menu */}
           {isAuthenticated && user ? (
             <div className="relative" ref={userMenuRef}>
@@ -330,24 +331,8 @@ export function DesktopHeader() {
             </div>
           )}
 
-          {/* Desktop Language Selector */}
-          <div className="flex items-center gap-1 rounded-full border border-white/70 bg-white/55 p-0.5 backdrop-blur-xl">
-            {LANGS.slice(0, 6).map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => setLang(l.id)}
-                aria-pressed={lang === l.id}
-                className={
-                  lang === l.id
-                    ? "rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm"
-                    : "rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
-                }
-              >
-                {l.label}
-              </button>
-            ))}
-          </div>
+          {/* Desktop 26-Language Horizontal Selector */}
+          <HorizontalLanguageSelector className="max-w-[260px] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[440px] xl:max-w-[500px]" />
         </div>
       </nav>
     </header>

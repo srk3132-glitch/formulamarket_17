@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n, LANGS } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-store";
 import { LanguageModal } from "@/components/common/LanguageModal";
+import { HorizontalLanguageSelector } from "@/components/common/HorizontalLanguageSelector";
 import { Globe, User, Sprout, Store, LogIn } from "lucide-react";
 
 export function MobileTopBar() {
@@ -80,6 +81,11 @@ export function MobileTopBar() {
               </Link>
             )}
           </div>
+        </div>
+
+        {/* 26 Indian Languages Horizontal Scrolling Row for Mobile */}
+        <div className="px-2 pb-2 pt-0.5 border-t border-brand-deep/5">
+          <HorizontalLanguageSelector isMobile />
         </div>
       </header>
 
