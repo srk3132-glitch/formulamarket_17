@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { LANGS, useI18n } from "@/lib/i18n";
-import { HorizontalLanguageSelector } from "@/components/common/HorizontalLanguageSelector";
+import { LanguageDropdown } from "@/components/common/LanguageDropdown";
 import { useAuth } from "@/lib/auth-store";
 import {
   Sprout,
@@ -331,8 +331,8 @@ export function DesktopHeader() {
             </div>
           )}
 
-          {/* Desktop 26-Language Horizontal Selector */}
-          <HorizontalLanguageSelector className="max-w-[260px] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[440px] xl:max-w-[500px]" />
+          {/* Desktop 26-Language Down-By-Down Dropdown Menu */}
+          <LanguageDropdown showQuickPills={true} />
         </div>
       </nav>
     </header>

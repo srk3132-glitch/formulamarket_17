@@ -158,11 +158,16 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
         </div>
       </div>
 
-      {/* MOBILE DROPDOWN (< 1024px / mobile & tablet view) */}
-      <div className="mt-3 lg:hidden" ref={dropdownRef}>
-        <label className="block text-xs font-semibold text-brand-deep mb-1.5">
-          {t("languageSelectorTitle")} ({languages.length})
-        </label>
+      {/* 26 LANGUAGES CLEAR DOWN-BY-DOWN DROPDOWN SELECTOR (Mobile & Desktop) */}
+      <div className="mt-3" ref={dropdownRef}>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-xs font-semibold text-brand-deep">
+            {t("languageSelectorTitle")} ({languages.length} Languages)
+          </label>
+          <span className="text-[11px] font-semibold text-brand">
+            Clear Down-by-Down Options ▾
+          </span>
+        </div>
         <div className="relative">
           <button
             type="button"
