@@ -237,3 +237,52 @@
     display: none;
   }
 }
+
+/* Indian Language Script Fonts & RTL Support */
+[data-lang="hi"], [data-lang="mr"], [data-lang="ne"], [data-lang="sa"],
+[data-lang="bho"], [data-lang="mai"], [data-lang="doi"], [data-lang="kok"],
+[data-lang="brx"], [data-lang="raj"], [data-lang="mwr"] {
+  font-family: "Noto Sans Devanagari", "Inter", sans-serif;
+}
+
+[data-lang="bn"], [data-lang="as"], [data-lang="mni"] {
+  font-family: "Noto Sans Bengali", "Inter", sans-serif;
+}
+
+[data-lang="te"] {
+  font-family: "Noto Sans Telugu", "Inter", sans-serif;
+}
+
+[data-lang="ta"] {
+  font-family: "Noto Sans Tamil", "Inter", sans-serif;
+}
+
+[data-lang="kn"], [data-lang="tcy"] {
+  font-family: "Noto Sans Kannada", "Inter", sans-serif;
+}
+
+[data-lang="ml"] {
+  font-family: "Noto Sans Malayalam", "Inter", sans-serif;
+}
+
+[data-lang="gu"] {
+  font-family: "Noto Sans Gujarati", "Inter", sans-serif;
+}
+
+[data-lang="pa"] {
+  font-family: "Noto Sans Gurmukhi", "Inter", sans-serif;
+}
+
+[data-lang="or"] {
+  font-family: "Noto Sans Oriya", "Inter", sans-serif;
+}
+
+[data-lang="ur"], [data-lang="ks"], [data-lang="sd"] {
+  font-family: "Noto Nastaliq Urdu", "Noto Sans Arabic", sans-serif;
+}
+
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+

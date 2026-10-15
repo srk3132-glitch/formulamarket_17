@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { ListingCard } from "@/components/ListingCard";
-import { CROPS, cropName, useI18n, type CropItem } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useTranslation } from "@/hooks/useTranslation";
+import { CROPS, cropName, type CropItem } from "@/lib/i18n";
 import { useRegion, STATES } from "@/lib/region-store";
 import { findDistrict, findState, type Lang } from "@/lib/regions";
 import { useListings, type Listing } from "@/lib/listings-store";
@@ -30,6 +32,9 @@ import {
   Check,
   ArrowRight,
   RotateCcw,
+  Store,
+  Sparkles,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -135,19 +140,13 @@ const REGIONAL_HUBS = [
   { stateId: "ts", districtId: "warangal", placeId: "enumamula", lat: 17.9689, lng: 79.5941 },
   { stateId: "kl", districtId: "wayanad", placeId: "sulthan-bathery", lat: 11.6627, lng: 76.257 },
   { stateId: "kl", districtId: "kottayam", placeId: "maravoor", lat: 9.5916, lng: 76.5222 },
-  {
-    stateId: "ka",
-    districtId: "bangalore-urban",
-    placeId: "yeshwanthpur",
-    lat: 12.9716,
-    lng: 77.5946,
-  },
+  { stateId: "ka", districtId: "bangalore-urban", placeId: "yeshwanthpur", lat: 12.9716, lng: 77.5946 },
   { stateId: "mh", districtId: "pune", placeId: "gultekdi", lat: 18.5204, lng: 73.8567 },
   { stateId: "dl", districtId: "north-delhi", placeId: "azadpur", lat: 28.7041, lng: 77.1025 },
 ];
 
 function SellPage() {
-  const { t, lang } = useI18n();
+  const { t, lang } = useTranslation();
   const { region: globalRegion, setRegion: setGlobalRegion } = useRegion();
   const { listings, addListing } = useListings();
   const { user, isAuthenticated, loginAsSeller } = useAuth();
@@ -251,7 +250,6 @@ function SellPage() {
     const numPrice = Number(price);
     if (isNaN(numPrice) || numPrice <= 0) return null;
 
-    // Normalize rate to quintal if unit is kg or tonne
     let normalizedPrice = numPrice;
     if (unit === "kg") normalizedPrice = numPrice * 100;
     if (unit === "tonne") normalizedPrice = numPrice / 10;
@@ -284,10 +282,42 @@ function SellPage() {
     };
   }, [cropSearch, lang]);
 
+  // Intelligent Voice Transcript Assistant
+  const handleVoiceTranscript = (transcript: string) => {
+    const lower = transcript.toLowerCase();
+
+    // Check if spoken words match a crop
+    const matchedCrop = CROPS.find((c) => {
+      const loc = cropName(c.id, lang).toLowerCase();
+      const enName = c.en.toLowerCase();
+      return lower.includes(loc) || lower.includes(enName) || lower.includes(c.id);
+    });
+
+    if (matchedCrop) {
+      setCropId(matchedCrop.id);
+      toast.success(`🌾 Voice selected crop: ${cropName(matchedCrop.id, lang)}`);
+      return;
+    }
+
+    // Check if spoken words contain numbers for quantity
+    const numbersMatch = transcript.match(/\d+(\.\d+)?/);
+    if (numbersMatch && !quantity) {
+      setQuantity(numbersMatch[0]);
+      toast.success(`🔢 Voice entered quantity: ${numbersMatch[0]} ${unit}`);
+      return;
+    }
+
+    // Fallback: fill farmer name if empty
+    if (!farmer && transcript.trim().length > 2) {
+      setFarmer(transcript.trim());
+      toast.success(`👤 Voice entered name: ${transcript.trim()}`);
+    }
+  };
+
   // Geolocation Auto-Fill
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
+      toast.error(t("errGeolocation"));
       return;
     }
 
@@ -296,7 +326,6 @@ function SellPage() {
       (pos) => {
         const { latitude, longitude } = pos.coords;
 
-        // Find nearest regional hub via Haversine distance
         let closest = REGIONAL_HUBS[0]!;
         let minDistance = Infinity;
 
@@ -320,21 +349,19 @@ function SellPage() {
         setIsDetectingLocation(false);
         const st = findState(closest.stateId);
         const dt = findDistrict(closest.stateId, closest.districtId);
-        toast.success(`📍 Auto-filled nearest mandi: ${dt.name}, ${st.name}`);
+        toast.success(`📍 ${t("msgMandiAutoFilled")} ${dt.name}, ${st.name}`);
       },
       () => {
         setIsDetectingLocation(false);
-        // Fallback to default Tamil Nadu Coimbatore
         setSelectedStateId("tn");
         setSelectedDistrictId("coimbatore");
         setSelectedPlaceId("kurumbapakkam");
-        toast.info("Using default regional market hub (Coimbatore, Tamil Nadu)");
+        toast.info(t("msgDefaultHub"));
       },
       { timeout: 6000 },
     );
   };
 
-  // State change handler
   const handleStateChange = (newStId: string) => {
     const nextSt = findState(newStId);
     const firstDist = nextSt.districts[0]!;
@@ -349,7 +376,6 @@ function SellPage() {
     });
   };
 
-  // District change handler
   const handleDistrictChange = (newDistId: string) => {
     const nextDist = findDistrict(selectedStateId, newDistId);
     const firstPlace = nextDist.places[0]!;
@@ -368,7 +394,7 @@ function SellPage() {
     if (!files || files.length === 0) return;
 
     if (photos.length + files.length > 3) {
-      toast.error("You can upload a maximum of 3 harvest photos.");
+      toast.error(t("errMaxPhotos"));
       return;
     }
 
@@ -378,9 +404,9 @@ function SellPage() {
         Array.from(files).map((f) => compressHarvestPhoto(f)),
       );
       setPhotos((prev) => [...prev, ...compressedList].slice(0, 3));
-      toast.success("Photos optimized (< 500KB) for instant loading!");
+      toast.success(t("msgPhotosOptimized"));
     } catch {
-      toast.error("Error processing photos. Please try again.");
+      toast.error(t("errProcessingPhotos"));
     } finally {
       setIsCompressingPhotos(false);
       e.target.value = "";
@@ -396,7 +422,6 @@ function SellPage() {
   const quantityValid = Number(quantity) > 0;
   const priceValid = !isNaN(Number(price)) && Number(price) > 0;
   const farmerValid = farmer.trim().length >= 2;
-
   const isFormValid = phoneValid && quantityValid && priceValid && farmerValid;
 
   // Execute Post to Shared Database
@@ -407,7 +432,6 @@ function SellPage() {
     const fullPhone = authenticatedPhone || `+91 ${phoneDigits.trim()}`;
 
     try {
-      // 1. Upload photos to Supabase Storage if configured (optional resilience)
       const supabase = getSupabase();
       if (supabase && photos.length > 0) {
         try {
@@ -422,11 +446,10 @@ function SellPage() {
             }
           }
         } catch {
-          // Storage upload is progressive enhancement; continuing with listing insert
+          // Storage upload is progressive enhancement
         }
       }
 
-      // 2. Insert into shared database
       const created = await addListing({
         cropId,
         quantity: Number(quantity),
@@ -456,19 +479,17 @@ function SellPage() {
     }
   };
 
-  // Primary Form Submit
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({ quantity: true, price: true, farmer: true, phone: true });
 
     if (!isFormValid) {
-      toast.error("Please fill in all required fields accurately.");
+      toast.error(t("errFormFill"));
       return;
     }
 
-    // Auth gate: if unauthenticated, trigger in-page OTP verification without leaving page
     if (!isAuthenticated) {
-      setOtpValue("1234"); // Prefill demo OTP for seamless one-tap verification
+      setOtpValue("1234");
       setShowOtpModal(true);
       return;
     }
@@ -476,10 +497,9 @@ function SellPage() {
     await executePostListing();
   };
 
-  // Complete In-Page Phone OTP Verification
   const handleVerifyOtp = async () => {
     if (otpValue.trim() !== "1234" && otpValue.trim().length < 4) {
-      setOtpError("Invalid OTP. For testing, enter demo OTP: 1234");
+      setOtpError(t("errInvalidOtp"));
       return;
     }
 
@@ -498,7 +518,7 @@ function SellPage() {
       });
 
       setShowOtpModal(false);
-      toast.success("Phone verified! Publishing harvest lot now...");
+      toast.success(t("msgPhoneVerified"));
       await executePostListing(fullPhone);
     } catch {
       setOtpError("Verification error. Please retry.");
@@ -507,7 +527,6 @@ function SellPage() {
     }
   };
 
-  // Reset form for "Post Another"
   const handlePostAnother = () => {
     setConfirmedListing(null);
     setQuantity("");
@@ -532,31 +551,67 @@ function SellPage() {
     );
   }, [listings, farmer, phoneDigits, user?.id]);
 
+  // Live draft preview object representing what the farmer is currently creating
+  const draftListingPreview: Listing = useMemo(
+    () => ({
+      id: "draft-preview",
+      cropId,
+      quantity: Number(quantity) || 10,
+      unit,
+      price: Number(price) || (reference?.modal ? reference.modal : 2000),
+      farmer: farmer.trim() || "Your Farm Lot",
+      phone: phoneDigits ? `+91 ${phoneDigits}` : "+91 98400 11223",
+      stateId: selectedStateId,
+      districtId: selectedDistrictId,
+      placeId: selectedPlaceId,
+      placeName: placeObj.name,
+      farmerId: user?.id,
+      status: "active",
+      createdAt: new Date().toISOString(),
+    }),
+    [
+      cropId,
+      quantity,
+      unit,
+      price,
+      reference?.modal,
+      farmer,
+      phoneDigits,
+      selectedStateId,
+      selectedDistrictId,
+      selectedPlaceId,
+      placeObj.name,
+      user?.id,
+    ],
+  );
+
   return (
-    <main className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pb-20 pt-6">
+    <main className="relative z-10 mx-auto max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 pb-24 pt-6">
+      {/* TASK 2: CENTERED PROMINENT 26 LANGUAGES SELECTOR AT TOP */}
+      <LanguageSelector onVoiceTranscript={handleVoiceTranscript} className="mb-8" />
+
       {/* SUCCESS CONFIRMATION STATE */}
       {confirmedListing ? (
-        <section className="mx-auto max-w-2xl rounded-3xl border border-emerald-500/30 bg-white/80 p-6 sm:p-8 shadow-xl backdrop-blur-2xl animate-in zoom-in-95 duration-200">
+        <section className="mx-auto max-w-2xl rounded-3xl border border-emerald-500/30 bg-white/85 p-6 sm:p-10 shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-200">
           <div className="text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-800 shadow-inner">
-              <CheckCircle2 className="size-8 text-emerald-600" />
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-emerald-100 text-emerald-800 shadow-inner">
+              <CheckCircle2 className="size-9 text-emerald-600" />
             </div>
             <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-emerald-950 sm:text-3xl">
-              Harvest Published Live!
+              {t("harvestSuccessTitle")}
             </h2>
-            <p className="mt-1 text-sm text-emerald-900/70">
-              Synced across all buyer devices on the network. Verified buyers can call you directly
-              with 0% commission.
+            <p className="mt-2 text-sm sm:text-base text-emerald-900/75 max-w-md mx-auto leading-relaxed">
+              {t("harvestSuccessSub")}
             </p>
           </div>
 
           {/* Harvest Summary Card */}
-          <div className="mt-6 rounded-2xl border border-emerald-900/10 bg-emerald-50/60 p-5 space-y-3">
+          <div className="mt-6 rounded-2xl border border-emerald-900/10 bg-emerald-50/70 p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-emerald-900/10 pb-3">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{selectedCropImage.emoji}</span>
+                <span className="text-4xl">{selectedCropImage.emoji}</span>
                 <div>
-                  <h3 className="font-bold text-emerald-950 text-base">
+                  <h3 className="font-bold text-emerald-950 text-lg">
                     {cropName(confirmedListing.cropId, lang)}
                   </h3>
                   <p className="text-xs text-emerald-900/70">
@@ -565,25 +620,25 @@ function SellPage() {
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-display text-xl font-bold text-emerald-800">
+                <span className="font-display text-2xl font-bold text-emerald-800">
                   {formatRupees(confirmedListing.price)}
                 </span>
-                <span className="block text-[11px] text-emerald-900/60">
+                <span className="block text-xs text-emerald-900/60">
                   /{confirmedListing.unit || "quintal"}
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs text-emerald-950/80 pt-1">
+            <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm text-emerald-950/80 pt-1">
               <div>
-                <span className="block text-[10px] uppercase font-bold text-emerald-900/60">
-                  Market / Mandi
+                <span className="block text-[11px] uppercase font-bold text-emerald-900/60">
+                  {t("mandiMarket")}
                 </span>
                 <span className="font-semibold">{confirmedListing.placeName}</span>
               </div>
               <div>
-                <span className="block text-[10px] uppercase font-bold text-emerald-900/60">
-                  Farmer Contact
+                <span className="block text-[11px] uppercase font-bold text-emerald-900/60">
+                  {t("farmerContact")}
                 </span>
                 <span className="font-semibold">{confirmedListing.phone}</span>
               </div>
@@ -592,19 +647,19 @@ function SellPage() {
             {(qualityGrade || isOrganic || availableFrom) && (
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-emerald-900/10">
                 {qualityGrade && (
-                  <span className="rounded-lg bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                  <span className="rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800">
                     Grade {qualityGrade}
                   </span>
                 )}
                 {isOrganic && (
-                  <span className="rounded-lg bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800 flex items-center gap-1">
-                    <Leaf className="size-3" />
-                    Organic Certified
+                  <span className="rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800 flex items-center gap-1">
+                    <Leaf className="size-3.5" />
+                    {t("organicCertified")}
                   </span>
                 )}
                 {availableFrom && (
-                  <span className="rounded-lg bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 flex items-center gap-1">
-                    <Calendar className="size-3" />
+                  <span className="rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800 flex items-center gap-1">
+                    <Calendar className="size-3.5" />
                     From: {availableFrom}
                   </span>
                 )}
@@ -612,529 +667,253 @@ function SellPage() {
             )}
           </div>
 
-          <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+          <div className="mt-8 flex flex-col-reverse sm:flex-row gap-3">
             <button
               type="button"
               onClick={handlePostAnother}
-              className="flex-1 rounded-xl border border-emerald-600/30 bg-white py-3 text-xs font-semibold text-emerald-900 hover:bg-emerald-50 transition flex items-center justify-center gap-1.5"
+              className="flex-1 rounded-xl border border-emerald-600/30 bg-white py-3.5 text-sm font-semibold text-emerald-900 hover:bg-emerald-50 transition flex items-center justify-center gap-2"
             >
-              <RotateCcw className="size-3.5" />
-              <span>Post Another Harvest</span>
+              <RotateCcw className="size-4" />
+              <span>{t("postAnother")}</span>
             </button>
             <Link
               to="/buy"
-              className="flex-1 rounded-xl bg-brand py-3 text-xs font-semibold text-white shadow-md hover:bg-brand/90 transition flex items-center justify-center gap-1.5"
+              className="flex-1 rounded-xl bg-brand py-3.5 text-sm font-semibold text-white shadow-md hover:bg-brand/90 transition flex items-center justify-center gap-2"
             >
-              <span>View On Live Buyer Feed</span>
-              <ArrowRight className="size-3.5" />
+              <span>{t("viewBuyerFeed")}</span>
+              <ArrowRight className="size-4" />
             </Link>
           </div>
         </section>
       ) : (
-        /* MAIN FORM & SIDEBAR GRID */
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-          <section className="rounded-3xl border border-white/60 bg-white/45 p-6 sm:p-8 shadow-[var(--shadow-glass)] backdrop-blur-2xl">
-            {/* Header Header & Reassurance */}
-            <div>
+        /* TASK 1: RESPONSIVE 2-COLUMN FORM ON LAPTOP/DESKTOP (>=1024px), CLEAN MOBILE FLOW (<1024px) */
+        <div className="space-y-10">
+          <section className="rounded-3xl border border-white/60 bg-white/50 p-6 sm:p-8 lg:p-10 shadow-[var(--shadow-glass)] backdrop-blur-2xl">
+            {/* Header Header & Trust Badges */}
+            <div className="border-b border-brand-deep/10 pb-6">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
-                  <Sprout className="size-3.5" />
-                  Farmer Direct Harvest Portal
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1 text-xs sm:text-sm font-semibold text-emerald-800">
+                  <Sprout className="size-4 text-emerald-700" />
+                  {t("portalBadge")}
                 </span>
-                <span className="text-xs text-brand-deep/60">
-                  0% Commission · Direct Buyer Calls
+                <span className="text-xs sm:text-sm text-brand-deep/70">
+                  {t("portalTrust")}
                 </span>
               </div>
-              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-brand-deep sm:text-3xl">
+              <h1 className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-brand-deep">
                 {t("sellTitle")}
               </h1>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed text-brand-deep/70">
+              <p className="mt-2 text-sm sm:text-base leading-relaxed text-brand-deep/75 max-w-3xl">
                 {t("sellSub")}
               </p>
+
+              {/* Authenticated Status indicator */}
+              {isAuthenticated && user?.role === "seller" ? (
+                <div className="mt-4 flex items-center justify-between rounded-2xl border border-emerald-600/20 bg-emerald-50/70 p-3 px-4 text-xs sm:text-sm text-emerald-900">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-emerald-700 shrink-0" />
+                    <span>
+                      {t("verifiedSeller")}{" "}
+                      <strong>{user.name}</strong> ({user.phone})
+                    </span>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            {/* Authenticated Status indicator */}
-            {isAuthenticated && user?.role === "seller" ? (
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-emerald-600/20 bg-emerald-50/50 p-2.5 px-3.5 text-xs text-emerald-900">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-emerald-700" />
-                  <span>
-                    Listing verified as: <strong>{user.name}</strong> ({user.phone})
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            {/* SUBMISSION FORM */}
-            <form className="mt-6 space-y-5" onSubmit={handleFormSubmit}>
-              {/* 1. SEARCHABLE CROP COMBOBOX */}
-              <div className="relative" ref={cropDropdownRef}>
-                <label className="block">
-                  <span className="mb-1.5 block text-xs font-semibold text-brand-deep">
-                    {t("crop")} <span className="text-red-500">*</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsCropDropdownOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between rounded-2xl border border-white/80 bg-white/85 px-3.5 py-3 text-sm font-semibold text-ink shadow-2xs transition hover:bg-white focus:border-brand focus:ring-1 focus:ring-brand min-h-[46px]"
-                    aria-expanded={isCropDropdownOpen}
-                  >
-                    <div className="flex items-center gap-2.5 truncate min-w-0">
-                      <span className="text-xl shrink-0">{selectedCropImage.emoji}</span>
-                      <span className="text-brand-deep font-bold truncate">
-                        {cropName(cropId, lang)}
-                      </span>
-                      {selectedCropInfo?.en &&
-                        selectedCropInfo.en.trim().toLowerCase() !==
-                          cropName(cropId, lang).trim().toLowerCase() && (
-                          <span className="text-xs text-brand-deep/50 truncate hidden sm:inline">
-                            ({selectedCropInfo.en})
-                          </span>
-                        )}
-                    </div>
-                    <ChevronDown
-                      className={`size-4 text-brand-deep/60 transition-transform ${
-                        isCropDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                </label>
-
-                {/* Combobox Dropdown Panel */}
-                {isCropDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-80 overflow-y-auto rounded-2xl border border-white/80 bg-white/95 p-3 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-                    {/* Search box inside combobox */}
-                    <div className="relative mb-3">
-                      <Search className="absolute left-3 top-2.5 size-3.5 text-brand-deep/40" />
-                      <input
-                        type="text"
-                        autoFocus
-                        placeholder="Search vegetable, fruit, grain..."
-                        value={cropSearch}
-                        onChange={(e) => setCropSearch(e.target.value)}
-                        className="w-full rounded-xl border border-brand/20 bg-white py-2 pl-9 pr-3 text-xs text-ink outline-none focus:border-brand"
-                      />
-                    </div>
-
-                    <div className="space-y-3">
-                      {/* Vegetables */}
-                      {groupedCrops.vegetables.length > 0 && (
-                        <div>
-                          <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-                            🥦 Vegetables ({groupedCrops.vegetables.length})
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                            {groupedCrops.vegetables.map((c) => {
-                              const img = getCropImage(c.id);
-                              const isSelected = cropId === c.id;
-                              return (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setCropId(c.id);
-                                    setIsCropDropdownOpen(false);
-                                  }}
-                                  className={`flex items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition min-h-[44px] ${
-                                    isSelected
-                                      ? "bg-brand text-white font-bold"
-                                      : "hover:bg-brand/10 text-brand-deep"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 truncate">
-                                    <span>{img.emoji}</span>
-                                    <span className="truncate">{cropName(c.id, lang)}</span>
-                                  </div>
-                                  {isSelected && <Check className="size-3.5 shrink-0 ml-1" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Fruits */}
-                      {groupedCrops.fruits.length > 0 && (
-                        <div>
-                          <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-amber-800">
-                            🍎 Fruits ({groupedCrops.fruits.length})
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                            {groupedCrops.fruits.map((c) => {
-                              const img = getCropImage(c.id);
-                              const isSelected = cropId === c.id;
-                              return (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setCropId(c.id);
-                                    setIsCropDropdownOpen(false);
-                                  }}
-                                  className={`flex items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition min-h-[44px] ${
-                                    isSelected
-                                      ? "bg-brand text-white font-bold"
-                                      : "hover:bg-brand/10 text-brand-deep"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 truncate">
-                                    <span>{img.emoji}</span>
-                                    <span className="truncate">{cropName(c.id, lang)}</span>
-                                  </div>
-                                  {isSelected && <Check className="size-3.5 shrink-0 ml-1" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Grains & Spices */}
-                      {groupedCrops.grains.length > 0 && (
-                        <div>
-                          <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-amber-900">
-                            🌾 Grains & Spices ({groupedCrops.grains.length})
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                            {groupedCrops.grains.map((c) => {
-                              const img = getCropImage(c.id);
-                              const isSelected = cropId === c.id;
-                              return (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setCropId(c.id);
-                                    setIsCropDropdownOpen(false);
-                                  }}
-                                  className={`flex items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition min-h-[44px] ${
-                                    isSelected
-                                      ? "bg-brand text-white font-bold"
-                                      : "hover:bg-brand/10 text-brand-deep"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 truncate">
-                                    <span>{img.emoji}</span>
-                                    <span className="truncate">{cropName(c.id, lang)}</span>
-                                  </div>
-                                  {isSelected && <Check className="size-3.5 shrink-0 ml-1" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+            {/* RESPONSIVE 2-COLUMN FORM ON DESKTOP */}
+            <form className="mt-8 space-y-8" onSubmit={handleFormSubmit}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-10 gap-8 items-start">
+                {/* ============================================================ */}
+                {/* COLUMN 1 (LEFT ON DESKTOP): CROP DETAILS & HARVEST SPECIFICS */}
+                {/* ============================================================ */}
+                <div className="space-y-6 lg:p-6 lg:rounded-2xl lg:bg-white/40 lg:border lg:border-white/70">
+                  <div className="flex items-center justify-between border-b border-brand-deep/10 pb-2.5">
+                    <h2 className="font-display font-bold text-base lg:text-lg text-brand-deep flex items-center gap-2">
+                      <Sprout className="size-5 text-brand" />
+                      <span>{t("cropDetailsHeading")}</span>
+                    </h2>
+                    <span className="text-xs text-brand-deep/60 uppercase font-semibold tracking-wider">
+                      Step 1 of 2
+                    </span>
                   </div>
-                )}
-              </div>
 
-              {/* 2. CASCADING LOCATION SELECTS WITH "USE MY LOCATION" */}
-              <div className="rounded-2xl border border-white/80 bg-white/60 p-4 backdrop-blur-xl">
-                <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-deep/70">
-                    {t("whereSelling")}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleUseMyLocation}
-                    disabled={isDetectingLocation}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-white px-3 py-1 text-xs font-semibold text-brand shadow-2xs hover:bg-brand/10 transition disabled:opacity-50 min-h-[36px]"
-                  >
-                    {isDetectingLocation ? (
-                      <Loader2 className="size-3.5 animate-spin" />
-                    ) : (
-                      <MapPin className="size-3.5 text-brand" />
-                    )}
-                    <span>{isDetectingLocation ? "Detecting..." : "Use my location"}</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {/* State Select */}
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
-                      {t("state")} <span className="text-red-500">*</span>
-                    </span>
-                    <select
-                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
-                      value={selectedStateId}
-                      onChange={(e) => handleStateChange(e.target.value)}
-                    >
-                      {STATES.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  {/* District Select (Clean names without stray asterisks) */}
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
-                      {t("district")} <span className="text-red-500">*</span>
-                    </span>
-                    <select
-                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
-                      value={selectedDistrictId}
-                      onChange={(e) => handleDistrictChange(e.target.value)}
-                    >
-                      {stateObj.districts.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name.replace(/\*+/g, "").trim()}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  {/* Mandi / Place Select */}
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
-                      {t("place")} <span className="text-red-500">*</span>
-                    </span>
-                    <select
-                      className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
-                      value={selectedPlaceId}
-                      onChange={(e) => {
-                        setSelectedPlaceId(e.target.value);
-                        setGlobalRegion({
-                          stateId: selectedStateId,
-                          districtId: selectedDistrictId,
-                          placeId: e.target.value,
-                        });
-                      }}
-                    >
-                      {districtObj.places.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              {/* 3. QUANTITY & UNIT SELECTOR */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="min-w-0">
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                      Quantity <span className="text-red-500">*</span>
-                    </span>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <input
-                        type="number"
-                        min="0.1"
-                        step="any"
-                        inputMode="decimal"
-                        className={`min-w-0 flex-1 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
-                          touched.quantity && !quantityValid
-                            ? "border-red-400 bg-red-50/50"
-                            : "border-white/80 focus:border-brand"
-                        }`}
-                        value={quantity}
-                        onChange={(e) => {
-                          setQuantity(e.target.value);
-                          setTouched((p) => ({ ...p, quantity: true }));
-                        }}
-                        onBlur={() => setTouched((p) => ({ ...p, quantity: true }))}
-                        placeholder="e.g. 15"
-                        required
-                      />
-                      <select
-                        value={unit}
-                        onChange={(e) => setUnit(e.target.value as "quintal" | "kg" | "tonne")}
-                        className="w-[125px] sm:w-[135px] max-w-[140px] shrink-0 truncate rounded-xl border border-white/80 bg-white/90 px-2 sm:px-2.5 py-2.5 text-xs font-semibold text-brand-deep outline-none focus:border-brand min-h-[44px]"
+                  {/* 1. SEARCHABLE CROP COMBOBOX */}
+                  <div className="relative" ref={cropDropdownRef}>
+                    <label className="block">
+                      <span className="mb-2 block text-xs lg:text-sm font-semibold text-brand-deep">
+                        {t("crop")} <span className="text-red-500">*</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsCropDropdownOpen((prev) => !prev)}
+                        className="w-full flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3.5 text-sm lg:text-base font-semibold text-ink shadow-2xs transition hover:bg-white focus:border-brand focus:ring-2 focus:ring-brand/30 min-h-[50px]"
+                        aria-expanded={isCropDropdownOpen}
                       >
-                        <option value="quintal">quintal (क्विंटल)</option>
-                        <option value="kg">kg (किलो)</option>
-                        <option value="tonne">tonne (टन)</option>
-                      </select>
-                    </div>
-                  </label>
-                  {touched.quantity && !quantityValid && (
-                    <span className="mt-1 block text-[11px] font-medium text-red-600">
-                      Please enter a valid quantity.
-                    </span>
-                  )}
-                </div>
-
-                {/* 4. ASK PRICE WITH REAL-TIME COMPARISON HINT */}
-                <div className="min-w-0">
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                      Ask Price (₹ per {unit}) <span className="text-red-500">*</span>
-                    </span>
-                    <input
-                      type="number"
-                      min="1"
-                      inputMode="numeric"
-                      className={`w-full min-w-0 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition min-h-[44px] ${
-                        touched.price && !priceValid
-                          ? "border-red-400 bg-red-50/50"
-                          : "border-white/80 focus:border-brand"
-                      }`}
-                      value={price}
-                      onChange={(e) => {
-                        setPrice(e.target.value);
-                        setTouched((p) => ({ ...p, price: true }));
-                      }}
-                      onBlur={() => setTouched((p) => ({ ...p, price: true }))}
-                      placeholder={reference ? String(reference.modal) : "2150"}
-                      required
-                    />
-                  </label>
-                  {touched.price && !priceValid && (
-                    <span className="mt-1 block text-[11px] font-medium text-red-600">
-                      Please enter a valid price.
-                    </span>
-                  )}
-
-                  {/* Live Price Hint */}
-                  {reference && priceComparison ? (
-                    <div
-                      className={`mt-1.5 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition min-w-0 ${
-                        priceComparison.isWithinTen
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-900"
-                      }`}
-                    >
-                      <TrendingUp className="size-3 shrink-0" />
-                      <span className="truncate">
-                        Today's mandi rate: {formatRupees(reference.modal)}/qtl. You're{" "}
-                        {Math.abs(priceComparison.diffPct)}%{" "}
-                        {priceComparison.isAbove
-                          ? "above"
-                          : priceComparison.isMatching
-                            ? "at"
-                            : "below"}{" "}
-                        market.
-                      </span>
-                    </div>
-                  ) : reference ? (
-                    <p className="mt-1 text-[11px] text-brand-deep/60 truncate">
-                      Mandi benchmark: <strong>{formatRupees(reference.modal)}</strong> / quintal
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-
-              {/* MOBILE ONLY: RATE CARD PLACED DIRECTLY UNDER PRICE */}
-              <div className="lg:hidden">
-                <RateCardContent
-                  reference={reference}
-                  placeName={placeObj.name}
-                  cropId={cropId}
-                  lang={lang}
-                />
-              </div>
-
-              {/* 5. FARMER NAME & PHONE NUMBER */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="min-w-0">
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                      {t("yourName")} <span className="text-red-500">*</span>
-                    </span>
-                    <input
-                      className={`w-full min-w-0 rounded-xl border bg-white/80 px-3.5 py-2.5 text-sm font-medium text-ink outline-none transition min-h-[44px] ${
-                        touched.farmer && !farmerValid
-                          ? "border-red-400 bg-red-50/50"
-                          : "border-white/80 focus:border-brand"
-                      }`}
-                      value={farmer}
-                      onChange={(e) => setFarmer(e.target.value)}
-                      onBlur={() => setTouched((p) => ({ ...p, farmer: true }))}
-                      placeholder="e.g. Ramesh Patel"
-                      required
-                    />
-                  </label>
-                  {touched.farmer && !farmerValid && (
-                    <span className="mt-1 block text-[11px] font-medium text-red-600">
-                      Please enter your name.
-                    </span>
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <label className="block min-w-0">
-                    <span className="mb-1 block text-xs font-semibold text-brand-deep">
-                      {t("phone")} <span className="text-red-500">*</span>
-                    </span>
-                    <div className="flex items-center min-w-0 rounded-xl border border-white/80 bg-white/80 px-3 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand min-h-[44px]">
-                      <span className="text-xs font-bold text-brand-deep/70 pr-2 border-r border-gray-300 shrink-0">
-                        +91
-                      </span>
-                      <input
-                        type="tel"
-                        maxLength={10}
-                        inputMode="numeric"
-                        className="w-full min-w-0 bg-transparent px-2.5 py-2.5 text-sm font-semibold text-ink outline-none"
-                        value={phoneDigits}
-                        onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ""))}
-                        onBlur={() => setTouched((p) => ({ ...p, phone: true }))}
-                        placeholder="98400 11223"
-                        required
-                      />
-                    </div>
-                  </label>
-                  {touched.phone && !phoneValid && (
-                    <span className="mt-1 block text-[11px] font-medium text-red-600">
-                      Enter a valid 10-digit Indian mobile number.
-                    </span>
-                  )}
-
-                  {/* WhatsApp Toggle */}
-                  <label className="mt-2 flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={hasWhatsapp}
-                      onChange={(e) => setHasWhatsapp(e.target.checked)}
-                      className="size-4 rounded text-brand focus:ring-brand"
-                    />
-                    <span className="text-xs font-medium text-brand-deep/80 flex items-center gap-1">
-                      <MessageCircle className="size-3.5 text-emerald-600" />
-                      WhatsApp available on this number
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* 6. OPTIONAL HARVEST DETAILS */}
-              <div className="rounded-2xl border border-white/70 bg-white/40 p-4 space-y-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-brand-deep/70 flex items-center gap-1.5">
-                  <Award className="size-3.5 text-brand" />
-                  Additional Harvest Lot Details (Optional)
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {/* Available From Date */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-brand-deep mb-1">
-                      Available From Date
+                        <div className="flex items-center gap-3 truncate min-w-0">
+                          <span className="text-2xl shrink-0">{selectedCropImage.emoji}</span>
+                          <span className="text-brand-deep font-bold truncate text-base">
+                            {cropName(cropId, lang)}
+                          </span>
+                          {selectedCropInfo?.en &&
+                            selectedCropInfo.en.trim().toLowerCase() !==
+                              cropName(cropId, lang).trim().toLowerCase() && (
+                              <span className="text-xs lg:text-sm text-brand-deep/55 truncate hidden sm:inline">
+                                ({selectedCropInfo.en})
+                              </span>
+                            )}
+                        </div>
+                        <ChevronDown
+                          className={`size-4 text-brand-deep/60 transition-transform ${
+                            isCropDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
                     </label>
-                    <input
-                      type="date"
-                      value={availableFrom}
-                      onChange={(e) => setAvailableFrom(e.target.value)}
-                      className="w-full rounded-xl border border-white/80 bg-white/80 px-2.5 py-2 text-xs font-medium text-ink outline-none min-h-[44px]"
-                    />
+
+                    {/* Combobox Dropdown Panel */}
+                    {isCropDropdownOpen && (
+                      <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-84 overflow-y-auto rounded-2xl border border-white/80 bg-white/98 p-3 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
+                        {/* Search box inside combobox */}
+                        <div className="relative mb-3">
+                          <Search className="absolute left-3 top-3 size-4 text-brand-deep/40" />
+                          <input
+                            type="text"
+                            autoFocus
+                            placeholder={t("searchCropPlaceholder")}
+                            value={cropSearch}
+                            onChange={(e) => setCropSearch(e.target.value)}
+                            className="w-full rounded-xl border border-brand/25 bg-white py-2.5 pl-9 pr-3 text-xs sm:text-sm text-ink outline-none focus:border-brand"
+                          />
+                        </div>
+
+                        <div className="space-y-3">
+                          {/* Vegetables */}
+                          {groupedCrops.vegetables.length > 0 && (
+                            <div>
+                              <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                                🥦 {t("categoryVegetables")} ({groupedCrops.vegetables.length})
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {groupedCrops.vegetables.map((c) => {
+                                  const img = getCropImage(c.id);
+                                  const isSelected = cropId === c.id;
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setCropId(c.id);
+                                        setIsCropDropdownOpen(false);
+                                      }}
+                                      className={`flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs lg:text-sm transition min-h-[44px] ${
+                                        isSelected
+                                          ? "bg-brand text-white font-bold"
+                                          : "hover:bg-brand/10 text-brand-deep"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2 truncate">
+                                        <span className="text-lg">{img.emoji}</span>
+                                        <span className="truncate">{cropName(c.id, lang)}</span>
+                                      </div>
+                                      {isSelected && <Check className="size-4 shrink-0 ml-1" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Fruits */}
+                          {groupedCrops.fruits.length > 0 && (
+                            <div>
+                              <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-amber-800">
+                                🍎 {t("categoryFruits")} ({groupedCrops.fruits.length})
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {groupedCrops.fruits.map((c) => {
+                                  const img = getCropImage(c.id);
+                                  const isSelected = cropId === c.id;
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setCropId(c.id);
+                                        setIsCropDropdownOpen(false);
+                                      }}
+                                      className={`flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs lg:text-sm transition min-h-[44px] ${
+                                        isSelected
+                                          ? "bg-brand text-white font-bold"
+                                          : "hover:bg-brand/10 text-brand-deep"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2 truncate">
+                                        <span className="text-lg">{img.emoji}</span>
+                                        <span className="truncate">{cropName(c.id, lang)}</span>
+                                      </div>
+                                      {isSelected && <Check className="size-4 shrink-0 ml-1" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Grains & Spices */}
+                          {groupedCrops.grains.length > 0 && (
+                            <div>
+                              <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-amber-900">
+                                🌾 {t("categoryGrains")} ({groupedCrops.grains.length})
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {groupedCrops.grains.map((c) => {
+                                  const img = getCropImage(c.id);
+                                  const isSelected = cropId === c.id;
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setCropId(c.id);
+                                        setIsCropDropdownOpen(false);
+                                      }}
+                                      className={`flex items-center justify-between rounded-xl px-3 py-2 text-left text-xs lg:text-sm transition min-h-[44px] ${
+                                        isSelected
+                                          ? "bg-brand text-white font-bold"
+                                          : "hover:bg-brand/10 text-brand-deep"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2 truncate">
+                                        <span className="text-lg">{img.emoji}</span>
+                                        <span className="truncate">{cropName(c.id, lang)}</span>
+                                      </div>
+                                      {isSelected && <Check className="size-4 shrink-0 ml-1" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Quality Grade */}
+                  {/* 2. QUALITY GRADE */}
                   <div>
-                    <label className="block text-[11px] font-semibold text-brand-deep mb-1">
-                      Quality Grade
+                    <label className="block text-xs lg:text-sm font-semibold text-brand-deep mb-2">
+                      {t("qualityGrade")}
                     </label>
-                    <div className="grid grid-cols-3 gap-1">
+                    <div className="grid grid-cols-3 gap-2">
                       {(["A", "B", "C"] as const).map((grade) => (
                         <button
                           key={grade}
                           type="button"
                           onClick={() => setQualityGrade(qualityGrade === grade ? "" : grade)}
-                          className={`rounded-xl py-2 text-xs font-bold transition min-h-[44px] ${
+                          className={`rounded-xl py-2.5 text-xs lg:text-sm font-bold transition min-h-[44px] ${
                             qualityGrade === grade
-                              ? "bg-brand text-white shadow-2xs"
+                              ? "bg-brand text-white shadow-sm ring-1 ring-brand"
                               : "border border-white/80 bg-white/80 text-brand-deep hover:bg-white"
                           }`}
                         >
@@ -1144,78 +923,381 @@ function SellPage() {
                     </div>
                   </div>
 
-                  {/* Organic Toggle */}
-                  <div className="flex flex-col justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setIsOrganic((prev) => !prev)}
-                      className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-bold transition min-h-[44px] ${
-                        isOrganic
-                          ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-800"
-                          : "border border-emerald-600/30 bg-emerald-50/70 text-emerald-900 hover:bg-emerald-100"
-                      }`}
-                    >
-                      <Leaf className="size-3.5" />
-                      <span>{isOrganic ? "✓ 100% Organic" : "Organic Produce?"}</span>
-                    </button>
+                  {/* 3. ORGANIC CERTIFICATION & HARVEST DATE */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs lg:text-sm font-semibold text-brand-deep mb-1.5">
+                        {t("availableFrom")}
+                      </label>
+                      <input
+                        type="date"
+                        value={availableFrom}
+                        onChange={(e) => setAvailableFrom(e.target.value)}
+                        className="w-full rounded-xl border border-white/80 bg-white/80 px-3 py-2.5 text-xs lg:text-sm font-medium text-ink outline-none min-h-[44px] focus:border-brand"
+                      />
+                    </div>
+
+                    <div className="flex flex-col justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setIsOrganic((prev) => !prev)}
+                        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs lg:text-sm font-bold transition min-h-[44px] ${
+                          isOrganic
+                            ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-800"
+                            : "border border-emerald-600/30 bg-emerald-50/70 text-emerald-900 hover:bg-emerald-100"
+                        }`}
+                      >
+                        <Leaf className="size-4" />
+                        <span>{isOrganic ? t("organicCertified") : t("organicProduce")}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 4. HARVEST PHOTOS UPLOAD */}
+                  <div className="rounded-2xl border border-white/70 bg-white/50 p-4">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <label className="text-xs lg:text-sm font-semibold text-brand-deep">
+                        {t("harvestPhotos")}
+                      </label>
+                      <span className="text-xs text-brand-deep/60 font-medium">
+                        {photos.length}/3 {t("uploadedPhotos")}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      {photos.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="relative size-20 sm:size-24 rounded-2xl overflow-hidden border border-emerald-900/20 shadow-xs"
+                        >
+                          <img
+                            src={item.previewUrl}
+                            alt="Harvest preview"
+                            className="size-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(idx)}
+                            className="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full bg-black/75 text-white hover:bg-red-600 transition"
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {photos.length < 3 && (
+                        <label className="flex flex-col items-center justify-center size-20 sm:size-24 rounded-2xl border-2 border-dashed border-brand/30 bg-white/70 hover:bg-white cursor-pointer transition min-h-[44px]">
+                          <Camera className="size-6 text-brand/70" />
+                          <span className="text-[11px] font-semibold text-brand mt-1">
+                            {t("addPhoto")}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                            disabled={isCompressingPhotos}
+                          />
+                        </label>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Photo Upload: Up to 3 client-compressed photos */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[11px] font-semibold text-brand-deep">
-                      Harvest Photos (Max 3, client-compressed &lt; 500KB)
-                    </label>
-                    <span className="text-[11px] text-brand-deep/50">
-                      {photos.length}/3 uploaded
+                {/* ========================================================================= */}
+                {/* COLUMN 2 (RIGHT ON DESKTOP): PRICE, QUANTITY, LOCATION & SELLER CONTACT */}
+                {/* ========================================================================= */}
+                <div className="space-y-6 lg:p-6 lg:rounded-2xl lg:bg-white/40 lg:border lg:border-white/70">
+                  <div className="flex items-center justify-between border-b border-brand-deep/10 pb-2.5">
+                    <h2 className="font-display font-bold text-base lg:text-lg text-brand-deep flex items-center gap-2">
+                      <TrendingUp className="size-5 text-brand" />
+                      <span>{t("pricingLocationHeading")}</span>
+                    </h2>
+                    <span className="text-xs text-brand-deep/60 uppercase font-semibold tracking-wider">
+                      Step 2 of 2
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    {photos.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="relative size-20 rounded-2xl overflow-hidden border border-emerald-900/20 shadow-xs"
-                      >
-                        <img
-                          src={item.previewUrl}
-                          alt="Harvest preview"
-                          className="size-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(idx)}
-                          className="absolute top-1 right-1 grid size-5 place-items-center rounded-full bg-black/70 text-white hover:bg-red-600 transition"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </div>
-                    ))}
+                  {/* 1. QUANTITY & ASK PRICE ROW */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Quantity Field */}
+                    <div className="min-w-0">
+                      <label className="block min-w-0">
+                        <span className="mb-2 block text-xs lg:text-sm font-semibold text-brand-deep">
+                          {t("quantity")} <span className="text-red-500">*</span>
+                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="any"
+                            inputMode="decimal"
+                            className={`min-w-0 flex-1 rounded-xl border bg-white/85 px-3.5 py-3 text-sm lg:text-base font-semibold text-ink outline-none transition min-h-[48px] ${
+                              touched.quantity && !quantityValid
+                                ? "border-red-400 bg-red-50/50"
+                                : "border-white/80 focus:border-brand"
+                            }`}
+                            value={quantity}
+                            onChange={(e) => {
+                              setQuantity(e.target.value);
+                              setTouched((p) => ({ ...p, quantity: true }));
+                            }}
+                            onBlur={() => setTouched((p) => ({ ...p, quantity: true }))}
+                            placeholder={t("quantityPlaceholder")}
+                            required
+                          />
+                          <select
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value as "quintal" | "kg" | "tonne")}
+                            className="w-[120px] sm:w-[130px] shrink-0 truncate rounded-xl border border-white/80 bg-white/95 px-2.5 py-3 text-xs lg:text-sm font-semibold text-brand-deep outline-none focus:border-brand min-h-[48px]"
+                          >
+                            <option value="quintal">{t("unitQuintal")}</option>
+                            <option value="kg">{t("unitKg")}</option>
+                            <option value="tonne">{t("unitTonne")}</option>
+                          </select>
+                        </div>
+                      </label>
+                      {touched.quantity && !quantityValid && (
+                        <span className="mt-1 block text-xs font-medium text-red-600">
+                          {t("errValidQuantity")}
+                        </span>
+                      )}
+                    </div>
 
-                    {photos.length < 3 && (
-                      <label className="flex flex-col items-center justify-center size-20 rounded-2xl border-2 border-dashed border-brand/30 bg-white/60 hover:bg-white cursor-pointer transition min-h-[44px]">
-                        <Camera className="size-5 text-brand/70" />
-                        <span className="text-[10px] font-semibold text-brand mt-1">+ Photo</span>
+                    {/* Ask Price Field */}
+                    <div className="min-w-0">
+                      <label className="block min-w-0">
+                        <span className="mb-2 block text-xs lg:text-sm font-semibold text-brand-deep">
+                          {t("askPrice")} <span className="text-red-500">*</span>
+                        </span>
                         <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handlePhotoUpload}
-                          className="hidden"
-                          disabled={isCompressingPhotos}
+                          type="number"
+                          min="1"
+                          inputMode="numeric"
+                          className={`w-full min-w-0 rounded-xl border bg-white/85 px-3.5 py-3 text-sm lg:text-base font-semibold text-ink outline-none transition min-h-[48px] ${
+                            touched.price && !priceValid
+                              ? "border-red-400 bg-red-50/50"
+                              : "border-white/80 focus:border-brand"
+                          }`}
+                          value={price}
+                          onChange={(e) => {
+                            setPrice(e.target.value);
+                            setTouched((p) => ({ ...p, price: true }));
+                          }}
+                          onBlur={() => setTouched((p) => ({ ...p, price: true }))}
+                          placeholder={reference ? String(reference.modal) : "2150"}
+                          required
                         />
                       </label>
-                    )}
+                      {touched.price && !priceValid && (
+                        <span className="mt-1 block text-xs font-medium text-red-600">
+                          {t("errValidPrice")}
+                        </span>
+                      )}
+
+                      {/* Live Market Benchmark Hint */}
+                      {reference && priceComparison ? (
+                        <div
+                          className={`mt-1.5 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition min-w-0 ${
+                            priceComparison.isWithinTen
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-900"
+                          }`}
+                        >
+                          <TrendingUp className="size-3.5 shrink-0" />
+                          <span className="truncate">
+                            {t("todaysMandiRate")} {formatRupees(reference.modal)}/qtl. (
+                            {Math.abs(priceComparison.diffPct)}%{" "}
+                            {priceComparison.isAbove
+                              ? t("rateAboveMarket")
+                              : priceComparison.isMatching
+                                ? t("rateAtMarket")
+                                : t("rateBelowMarket")}
+                            )
+                          </span>
+                        </div>
+                      ) : reference ? (
+                        <p className="mt-1 text-xs text-brand-deep/60 truncate">
+                          {t("mandiBenchmark")} <strong>{formatRupees(reference.modal)}</strong> / quintal
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* 2. EMBEDDED BENCHMARK MANDI RATE CARD */}
+                  <RateCardContent
+                    reference={reference}
+                    placeName={placeObj.name}
+                    cropId={cropId}
+                    lang={lang}
+                  />
+
+                  {/* 3. CASCADING LOCATION SELECTS */}
+                  <div className="rounded-2xl border border-white/80 bg-white/70 p-4">
+                    <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-brand-deep/75">
+                        {t("whereSelling")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleUseMyLocation}
+                        disabled={isDetectingLocation}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-white px-3 py-1 text-xs font-semibold text-brand shadow-2xs hover:bg-brand/10 transition disabled:opacity-50 min-h-[34px]"
+                      >
+                        {isDetectingLocation ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <MapPin className="size-3.5 text-brand" />
+                        )}
+                        <span>
+                          {isDetectingLocation ? t("detectingLocation") : t("useMyLocation")}
+                        </span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* State Select */}
+                      <label className="block min-w-0">
+                        <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
+                          {t("state")} <span className="text-red-500">*</span>
+                        </span>
+                        <select
+                          className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                          value={selectedStateId}
+                          onChange={(e) => handleStateChange(e.target.value)}
+                        >
+                          {STATES.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      {/* District Select */}
+                      <label className="block min-w-0">
+                        <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
+                          {t("district")} <span className="text-red-500">*</span>
+                        </span>
+                        <select
+                          className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                          value={selectedDistrictId}
+                          onChange={(e) => handleDistrictChange(e.target.value)}
+                        >
+                          {stateObj.districts.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name.replace(/\*+/g, "").trim()}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      {/* Mandi Select */}
+                      <label className="block min-w-0">
+                        <span className="mb-1 block text-[11px] font-medium text-brand-deep/60">
+                          {t("place")} <span className="text-red-500">*</span>
+                        </span>
+                        <select
+                          className="w-full min-w-0 truncate rounded-xl border border-white/80 bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-medium text-ink outline-none focus:border-brand min-h-[44px]"
+                          value={selectedPlaceId}
+                          onChange={(e) => {
+                            setSelectedPlaceId(e.target.value);
+                            setGlobalRegion({
+                              stateId: selectedStateId,
+                              districtId: selectedDistrictId,
+                              placeId: e.target.value,
+                            });
+                          }}
+                        >
+                          {districtObj.places.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 4. FARMER NAME & PHONE NUMBER */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="min-w-0">
+                      <label className="block min-w-0">
+                        <span className="mb-1.5 block text-xs lg:text-sm font-semibold text-brand-deep">
+                          {t("yourName")} <span className="text-red-500">*</span>
+                        </span>
+                        <input
+                          className={`w-full min-w-0 rounded-xl border bg-white/85 px-3.5 py-3 text-sm lg:text-base font-medium text-ink outline-none transition min-h-[48px] ${
+                            touched.farmer && !farmerValid
+                              ? "border-red-400 bg-red-50/50"
+                              : "border-white/80 focus:border-brand"
+                          }`}
+                          value={farmer}
+                          onChange={(e) => setFarmer(e.target.value)}
+                          onBlur={() => setTouched((p) => ({ ...p, farmer: true }))}
+                          placeholder={t("namePlaceholder")}
+                          required
+                        />
+                      </label>
+                      {touched.farmer && !farmerValid && (
+                        <span className="mt-1 block text-xs font-medium text-red-600">
+                          {t("errValidName")}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <label className="block min-w-0">
+                        <span className="mb-1.5 block text-xs lg:text-sm font-semibold text-brand-deep">
+                          {t("phone")} <span className="text-red-500">*</span>
+                        </span>
+                        <div className="flex items-center min-w-0 rounded-xl border border-white/80 bg-white/85 px-3 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand min-h-[48px]">
+                          <span className="text-xs lg:text-sm font-bold text-brand-deep/75 pr-2.5 border-r border-gray-300 shrink-0">
+                            +91
+                          </span>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            inputMode="numeric"
+                            className="w-full min-w-0 bg-transparent px-2.5 py-3 text-sm lg:text-base font-semibold text-ink outline-none"
+                            value={phoneDigits}
+                            onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ""))}
+                            onBlur={() => setTouched((p) => ({ ...p, phone: true }))}
+                            placeholder={t("phonePlaceholder")}
+                            required
+                          />
+                        </div>
+                      </label>
+                      {touched.phone && !phoneValid && (
+                        <span className="mt-1 block text-xs font-medium text-red-600">
+                          {t("errValidPhone")}
+                        </span>
+                      )}
+
+                      {/* WhatsApp Checkbox */}
+                      <label className="mt-2.5 flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={hasWhatsapp}
+                          onChange={(e) => setHasWhatsapp(e.target.checked)}
+                          className="size-4 rounded text-brand focus:ring-brand"
+                        />
+                        <span className="text-xs font-medium text-brand-deep/80 flex items-center gap-1">
+                          <MessageCircle className="size-3.5 text-emerald-600" />
+                          {t("whatsappAvailable")}
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Error notice if submit failed */}
               {submitError && (
-                <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-xs text-red-900 flex items-center justify-between gap-2">
+                <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-xs sm:text-sm text-red-900 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="size-4 text-red-600 shrink-0" />
+                    <AlertCircle className="size-5 text-red-600 shrink-0" />
                     <span>{submitError}</span>
                   </div>
                   <button
@@ -1223,64 +1305,195 @@ function SellPage() {
                     onClick={() => executePostListing()}
                     className="font-bold text-red-800 underline hover:no-underline"
                   >
-                    Retry
+                    {t("retryBtn")}
                   </button>
                 </div>
               )}
 
               {/* SUBMIT BUTTON WITH TRUST NOTE */}
-              <div>
+              <div className="pt-4 border-t border-brand-deep/10">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3.5 text-sm sm:text-base font-bold text-primary-foreground shadow-[var(--shadow-brand)] transition hover:bg-brand/90 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 min-h-[48px]"
+                  className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-brand px-6 py-4 text-base lg:text-lg font-bold text-primary-foreground shadow-[var(--shadow-brand)] transition hover:bg-brand/90 hover:scale-[1.008] active:scale-[0.99] disabled:opacity-60 min-h-[52px]"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Publishing to Shared Realtime Network...</span>
+                      <Loader2 className="size-5 animate-spin" />
+                      <span>{t("publishingListing")}</span>
                     </>
                   ) : (
                     <>
-                      <Sprout className="size-4" />
+                      <Sprout className="size-5" />
                       <span>{t("postListing")}</span>
                     </>
                   )}
                 </button>
 
-                {/* TRUST NOTE */}
-                <p className="mt-2.5 text-center text-xs text-brand-deep/60">
+                <p className="mt-3 text-center text-xs lg:text-sm text-brand-deep/65">
                   {t("zeroCommissionTrust")}
                 </p>
               </div>
             </form>
           </section>
 
-          {/* DESKTOP STICKY SIDE CARD */}
-          <aside className="hidden lg:block lg:sticky lg:top-24 h-fit space-y-4">
-            <RateCardContent
-              reference={reference}
-              placeName={placeObj.name}
-              cropId={cropId}
-              lang={lang}
-            />
-
-            {/* My Active Harvests Preview */}
-            {myListings.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-brand-deep/60">
-                  Your Active Harvests ({myListings.length})
+          {/* ============================================================ */}
+          {/* TASK 1 REQUIREMENT: PROPER GRID FOR PRODUCT PREVIEWS ON DESKTOP */}
+          {/* ============================================================ */}
+          <section className="rounded-3xl border border-white/60 bg-white/50 p-6 sm:p-8 lg:p-10 shadow-[var(--shadow-glass-sm)] backdrop-blur-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-brand-deep/10">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="grid size-9 place-items-center rounded-xl bg-brand/10 text-brand">
+                    <Store className="size-5" />
+                  </span>
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-brand-deep">
+                    {t("activeHarvestsGridTitle")}
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-brand-deep/70 mt-1">
+                  {t("activeHarvestsGridSub")}
                 </p>
-                {myListings.map((l) => (
-                  <ListingCard key={l.id} listing={l} />
-                ))}
               </div>
-            )}
-          </aside>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                  <Sparkles className="size-3" />
+                  Live Preview Network
+                </span>
+                <span className="rounded-full bg-brand/10 border border-brand/20 px-3 py-1 text-xs font-bold text-brand-deep">
+                  {myListings.length} {t("listings")}
+                </span>
+              </div>
+            </div>
+
+            {/* PRODUCT PREVIEWS GRID: 1-col on mobile, 2-col on tablet, 3-col on desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Card 1: Interactive Live Draft Lot Preview */}
+              <div className="rounded-2xl border-2 border-dashed border-brand/40 bg-white/70 p-5 shadow-xs relative flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-900 px-2.5 py-0.5 text-[11px] font-bold">
+                      <Eye className="size-3 text-amber-700" />
+                      Live Draft Preview
+                    </span>
+                    <span className="text-[11px] text-brand-deep/60 font-semibold">
+                      Auto-syncing
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">{selectedCropImage.emoji}</span>
+                    <div>
+                      <h3 className="font-bold text-base text-brand-deep">
+                        {cropName(cropId, lang)}
+                      </h3>
+                      <p className="text-xs text-brand-deep/60">
+                        {quantity || "10"} {unit}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-brand/5 p-3 flex items-baseline justify-between">
+                    <span className="text-xs text-brand-deep/70 font-semibold">Your Ask Price</span>
+                    <span className="font-display text-xl font-bold text-brand">
+                      {formatRupees(Number(price) || reference?.modal || 2000)}/{unit}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-brand-deep/75 space-y-1">
+                    <p className="flex items-center gap-1.5">
+                      <MapPin className="size-3.5 text-brand shrink-0" />
+                      <span className="font-semibold">{placeObj.name}</span>
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <Phone className="size-3.5 text-brand shrink-0" />
+                      <span>{farmer || "Your Name"} ({phoneDigits ? `+91 ${phoneDigits}` : "+91 ..."})</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-brand-deep/10 flex items-center justify-between text-[11px] text-brand-deep/60">
+                  <span>Updates live as you type</span>
+                  <span className="font-bold text-brand">0% Commission</span>
+                </div>
+              </div>
+
+              {/* Cards 2+: User's Active Listings */}
+              {myListings.map((l) => (
+                <div key={l.id} className="h-full">
+                  <ListingCard listing={l} />
+                </div>
+              ))}
+
+              {/* Fallback Regional Highlight Lots if no other listings yet */}
+              {myListings.length === 0 && (
+                <>
+                  <div className="rounded-2xl border border-white/80 bg-white/60 p-5 shadow-xs flex flex-col justify-between opacity-85">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-900 px-2.5 py-0.5 text-[11px] font-bold">
+                          Sample Mandi Lot
+                        </span>
+                        <span className="text-[11px] text-brand-deep/60">Coimbatore</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-4xl">🧅</span>
+                        <div>
+                          <h3 className="font-bold text-base text-brand-deep">
+                            {cropName("onion", lang)}
+                          </h3>
+                          <p className="text-xs text-brand-deep/60">25 quintals · Grade A</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50/70 p-3 flex items-baseline justify-between">
+                        <span className="text-xs text-emerald-900/70 font-semibold">Today's Rate</span>
+                        <span className="font-display text-xl font-bold text-emerald-800">
+                          ₹2,400/qtl
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-brand-deep/60 border-t border-brand-deep/10 pt-2.5">
+                      Verified APMC Lot · Ready for Instant Call
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/80 bg-white/60 p-5 shadow-xs flex flex-col justify-between opacity-85">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-900 px-2.5 py-0.5 text-[11px] font-bold">
+                          Sample Mandi Lot
+                        </span>
+                        <span className="text-[11px] text-brand-deep/60">Yeshwanthpur</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-4xl">🥔</span>
+                        <div>
+                          <h3 className="font-bold text-base text-brand-deep">
+                            {cropName("potato", lang)}
+                          </h3>
+                          <p className="text-xs text-brand-deep/60">40 quintals · 100% Organic</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50/70 p-3 flex items-baseline justify-between">
+                        <span className="text-xs text-emerald-900/70 font-semibold">Today's Rate</span>
+                        <span className="font-display text-xl font-bold text-emerald-800">
+                          ₹1,850/qtl
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-brand-deep/60 border-t border-brand-deep/10 pt-2.5">
+                      Direct Farmer Connection · 0% Middleman
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
         </div>
       )}
 
-      {/* IN-PAGE PHONE OTP MODAL (Prevents losing typed form data) */}
+      {/* IN-PAGE PHONE OTP MODAL */}
       {showOtpModal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-sm rounded-3xl border border-white/80 bg-white p-6 shadow-2xl space-y-4">
@@ -1290,7 +1503,7 @@ function SellPage() {
                   <Phone className="size-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-brand-deep">Quick Phone Verification</h3>
+                  <h3 className="font-bold text-sm text-brand-deep">{t("quickOtpTitle")}</h3>
                   <p className="text-[11px] text-brand-deep/60">+91 {phoneDigits}</p>
                 </div>
               </div>
@@ -1303,14 +1516,13 @@ function SellPage() {
               </button>
             </div>
 
-            <p className="text-xs text-brand-deep/70">
-              To keep Formula Market 100% verified, enter the 4-digit code sent to your phone. Your
-              listing details are preserved.
+            <p className="text-xs text-brand-deep/70 leading-relaxed">
+              {t("quickOtpSub")}
             </p>
 
             <div>
               <label className="block text-xs font-semibold text-brand-deep mb-1">
-                Enter 4-Digit OTP
+                {t("enterOtp")}
               </label>
               <input
                 type="text"
@@ -1322,7 +1534,7 @@ function SellPage() {
                 className="w-full text-center tracking-[0.5em] font-display text-2xl font-bold rounded-xl border border-gray-300 py-2.5 outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               />
               <p className="mt-1 text-[11px] text-emerald-800 font-medium text-center">
-                Demo OTP: <strong>1234</strong>
+                {t("demoOtpHint")}
               </p>
             </div>
 
@@ -1334,12 +1546,12 @@ function SellPage() {
               type="button"
               onClick={handleVerifyOtp}
               disabled={isVerifyingOtp}
-              className="w-full rounded-xl bg-brand py-3 text-xs font-bold text-white shadow-md hover:bg-brand/90 transition flex items-center justify-center gap-1.5"
+              className="w-full rounded-xl bg-brand py-3 text-xs font-bold text-white shadow-md hover:bg-brand/90 transition flex items-center justify-center gap-2"
             >
               {isVerifyingOtp ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <span>Verify & Publish Live Harvest</span>
+                <span>{t("verifyPublishBtn")}</span>
               )}
             </button>
           </div>
@@ -1349,7 +1561,7 @@ function SellPage() {
   );
 }
 
-// Reusable Live Rate Card Component (Mobile & Desktop)
+// Reusable Live Rate Card Component
 function RateCardContent({
   reference,
   placeName,
@@ -1361,18 +1573,18 @@ function RateCardContent({
   cropId: string;
   lang: Lang;
 }) {
-  const { t } = useI18n();
+  const { t } = useTranslation();
   const cropImage = getCropImage(cropId);
 
   return (
-    <div className="rounded-3xl border border-white/60 bg-white/50 p-5 sm:p-6 shadow-[var(--shadow-glass-sm)] backdrop-blur-2xl">
-      <div className="flex items-center justify-between border-b border-brand-deep/10 pb-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-deep/60 flex items-center gap-1.5">
+    <div className="rounded-2xl border border-white/80 bg-white/70 p-4 sm:p-5 shadow-2xs backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-brand-deep/10 pb-2.5">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-brand-deep/65 flex items-center gap-1.5">
           <TrendingUp className="size-3.5 text-brand" />
           {t("ratesTitle")}
         </span>
-        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-          Live Mandi Rate
+        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800">
+          {t("liveMandiRate")}
         </span>
       </div>
 
@@ -1382,7 +1594,7 @@ function RateCardContent({
           <h4 className="font-bold text-sm text-brand-deep leading-tight">
             {cropName(cropId, lang)}
           </h4>
-          <p className="text-[11px] text-brand-deep/60 flex items-center gap-1">
+          <p className="text-xs text-brand-deep/60 flex items-center gap-1">
             <MapPin className="size-3 text-brand" />
             {placeName}
           </p>
@@ -1390,28 +1602,28 @@ function RateCardContent({
       </div>
 
       {reference ? (
-        <div className="mt-4 space-y-1">
+        <div className="mt-3 space-y-1">
           <div className="flex items-baseline gap-1.5">
-            <span className="font-display text-3xl font-bold text-brand-deep">
+            <span className="font-display text-2xl lg:text-3xl font-bold text-brand-deep">
               {formatRupees(reference.modal)}
             </span>
             <span className="text-xs text-brand-deep/60 font-medium">/{t("quintal")}</span>
           </div>
 
-          <p className="text-xs text-brand-deep/70">
-            Daily Mandi Range: {formatRupees(reference.min)} – {formatRupees(reference.max)}
+          <p className="text-xs text-brand-deep/75">
+            {t("dailyMandiRange")} {formatRupees(reference.min)} – {formatRupees(reference.max)}
           </p>
         </div>
       ) : (
-        <div className="mt-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-900 flex items-center gap-2">
+        <div className="mt-3 rounded-xl bg-amber-50 p-2.5 text-xs text-amber-900 flex items-center gap-2">
           <HelpCircle className="size-4 text-amber-700 shrink-0" />
-          <span>{t("rateNotAvailable")} for this market today.</span>
+          <span>{t("rateNotAvailable")}</span>
         </div>
       )}
 
-      <div className="mt-4 border-t border-brand-deep/10 pt-2.5 flex items-center justify-between text-[10px] text-brand-deep/60">
-        <span>Verified APMC Agmarknet Feed</span>
-        <span>0% Middleman Cut</span>
+      <div className="mt-3 border-t border-brand-deep/10 pt-2 flex items-center justify-between text-[11px] text-brand-deep/60">
+        <span>{t("verifiedApmc")}</span>
+        <span>{t("zeroCut")}</span>
       </div>
     </div>
   );

@@ -42,6 +42,8 @@ export const LANGS: LangInfo[] = [
   { id: "brx", label: "बर'", englishLabel: "Bodo", region: "Assam & Bodoland" },
   { id: "sa", label: "संस्कृतम्", englishLabel: "Sanskrit", region: "Classical" },
   { id: "mwr", label: "मारवाड़ी", englishLabel: "Marwari", region: "Rajasthan" },
+  { id: "raj", label: "राजस्थानी", englishLabel: "Rajasthani", region: "Rajasthan" },
+  { id: "tcy", label: "ತುಳು", englishLabel: "Tulu", region: "Coastal Karnataka & Kerala" },
   { id: "hne", label: "छत्तीसगढ़ी", englishLabel: "Chhattisgarhi", region: "Chhattisgarh" },
   { id: "bgc", label: "हरियाणवी", englishLabel: "Haryanvi", region: "Haryana" },
 ];
@@ -1348,6 +1350,8 @@ const bgc: Dict = {
   yourName: "थारा नाम",
 };
 
+import { ALL_LOCALES, LANGUAGES_26 } from "@/locales";
+
 export const DICTS: Record<Lang, Dict> = {
   en,
   hi,
@@ -1376,6 +1380,8 @@ export const DICTS: Record<Lang, Dict> = {
   mwr,
   hne,
   bgc,
+  raj: (ALL_LOCALES["raj"] || mwr) as unknown as Dict,
+  tcy: (ALL_LOCALES["tcy"] || kn) as unknown as Dict,
 };
 
 import { ALL_CROPS, type CropCategory, type CropItem } from "./crops-data";
@@ -1402,24 +1408,61 @@ type LangContextValue = {
 
 const LangContext = createContext<LangContextValue | null>(null);
 
+function applyLangDocumentStyles(l: Lang) {
+  if (typeof document === "undefined") return;
+  const isRTL = l === "ur" || l === "ks" || l === "sd";
+  document.documentElement.lang = l;
+  document.documentElement.dir = isRTL ? "rtl" : "ltr";
+  document.documentElement.setAttribute("data-lang", l);
+  const meta = LANGUAGES_26.find((item) => item.code === l);
+  if (meta) {
+    document.documentElement.style.setProperty("--font-current-script", meta.fontFamily);
+  }
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
     const stored = window.localStorage.getItem("kb-lang") as Lang | null;
-    if (stored && stored in DICTS) setLangState(stored);
+    if (stored && (stored in DICTS || stored in ALL_LOCALES)) {
+      setLangState(stored);
+      applyLangDocumentStyles(stored);
+    } else {
+      applyLangDocumentStyles("en");
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "kb-lang" && e.newValue) {
+        const newL = e.newValue as Lang;
+        if (newL in DICTS || newL in ALL_LOCALES) {
+          setLangState(newL);
+          applyLangDocumentStyles(newL);
+        }
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     window.localStorage.setItem("kb-lang", l);
+    applyLangDocumentStyles(l);
   }, []);
 
   const value = useMemo<LangContextValue>(
     () => ({
       lang,
       setLang,
-      t: (key: string) => DICTS[lang][key] ?? DICTS.en[key] ?? key,
+      t: (key: string) => {
+        const localeDict = ALL_LOCALES[lang];
+        if (localeDict && localeDict[key]) return localeDict[key];
+        if (DICTS[lang] && DICTS[lang][key]) return DICTS[lang][key];
+        const enLocale = ALL_LOCALES.en;
+        if (enLocale && enLocale[key]) return enLocale[key];
+        return DICTS.en[key] ?? key;
+      },
     }),
     [lang, setLang],
   );

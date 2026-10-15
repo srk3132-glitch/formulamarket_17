@@ -25,7 +25,9 @@ export type Lang =
   | "sa"
   | "mwr"
   | "hne"
-  | "bgc";
+  | "bgc"
+  | "raj"
+  | "tcy";
 
 export type Place = { id: string; name: string };
 export type District = { id: string; name: string; places: Place[] };
