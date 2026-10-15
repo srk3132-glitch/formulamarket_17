@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
 
@@ -237,6 +237,7 @@
     display: none;
   }
 }
+<<<<<<< HEAD
 
 /* Indian Language Script Fonts & RTL Support */
 [data-lang="hi"], [data-lang="mr"], [data-lang="ne"], [data-lang="sa"],
@@ -284,5 +285,22 @@
 [dir="rtl"] {
   direction: rtl;
   text-align: right;
+=======
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+>>>>>>> 0d43f03ed679adadd3c4a4000a3093cda96c9fcb
 }
 

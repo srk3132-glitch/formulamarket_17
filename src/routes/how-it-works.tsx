@@ -1,5 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useI18n } from "@/lib/i18n";
+import { createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
+import { useDeviceLayout } from "@/hooks/use-mobile";
+
+const HowItWorksMobileView = lazy(() => import("@/components/how/HowItWorksMobileView"));
+const HowItWorksDesktopView = lazy(() => import("@/components/how/HowItWorksDesktopView"));
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
@@ -21,41 +25,28 @@ export const Route = createFileRoute("/how-it-works")({
 });
 
 function HowPage() {
-  const { t } = useI18n();
+  const { isMobile, isMounted } = useDeviceLayout();
 
-  const steps = [
-    { n: "1", title: t("how1Title"), body: t("how1") },
-    { n: "2", title: t("how2Title"), body: t("how2") },
-    { n: "3", title: t("how3Title"), body: t("how3") },
-  ];
+  if (!isMounted) {
+    return (
+      <>
+        <div className="block md:hidden p-3.5">
+          <div className="min-h-screen rounded-2xl bg-white/30 animate-pulse" />
+        </div>
+        <div className="hidden md:block max-w-6xl mx-auto px-5 pt-8">
+          <div className="min-h-screen rounded-3xl bg-white/30 animate-pulse" />
+        </div>
+      </>
+    );
+  }
 
   return (
-    <main className="relative z-10 mx-auto max-w-6xl px-5 pb-16 pt-10">
-      <section className="rounded-3xl border border-white/60 bg-white/40 p-8 shadow-[var(--shadow-glass)] backdrop-blur-2xl">
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-deep">
-          {t("howTitle")}
-        </h1>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {steps.map((s) => (
-            <div
-              key={s.n}
-              className="rounded-2xl border border-white/70 bg-white/60 p-5 backdrop-blur-xl"
-            >
-              <span className="grid size-8 place-items-center rounded-xl bg-brand font-display text-sm font-semibold text-primary-foreground">
-                {s.n}
-              </span>
-              <h2 className="mt-3 font-semibold text-brand-deep">{s.title}</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-brand-deep/70">{s.body}</p>
-            </div>
-          ))}
-        </div>
-        <Link
-          to="/sell"
-          className="mt-6 inline-block rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-brand)] transition hover:bg-brand/90"
-        >
-          {t("sellTitle")}
-        </Link>
-      </section>
-    </main>
+    <Suspense
+      fallback={
+        <div className="min-h-screen p-4 sm:p-8 animate-pulse bg-white/30 rounded-3xl max-w-6xl mx-auto my-4" />
+      }
+    >
+      {isMobile ? <HowItWorksMobileView /> : <HowItWorksDesktopView />}
+    </Suspense>
   );
 }

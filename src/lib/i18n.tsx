@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import type { Lang } from "./regions";
+export type { Lang };
+
 
 export type LangInfo = {
   id: Lang;
@@ -57,6 +59,7 @@ const en: Dict = {
   navSell: "Sell produce",
   navBuy: "Buy direct",
   navHow: "How it works",
+  navSlots: "Slot booking",
   liveBadge: "Live · Updated just now",
   heroA: "Real-time prices,",
   heroB: "fairer markets",
@@ -171,6 +174,7 @@ const ta: Dict = {
   navSell: "விளைபொருள் விற்க",
   navBuy: "நேரடி வாங்க",
   navHow: "எப்படி வேலை செய்கிறது",
+  navSlots: "முன்பதிவு",
   liveBadge: "நேரடி · இப்போது புதுப்பிக்கப்பட்டது",
   heroA: "நேரடி விலைகள்,",
   heroB: "நியாயமான சந்தை",
@@ -263,6 +267,7 @@ const te: Dict = {
   navSell: "పంట అమ్మండి",
   navBuy: "నేరుగా కొనండి",
   navHow: "ఇది ఎలా పనిచేస్తుంది",
+  navSlots: "స్లాట్ బుకింగ్",
   liveBadge: "ప్రత్యక్షం · ఇప్పుడే నవీకరించబడింది",
   heroA: "ప్రత్యక్ష ధరలు,",
   heroB: "న్యాయమైన మార్కెట్లు",
@@ -355,6 +360,7 @@ const ml: Dict = {
   navSell: "വിള വിൽക്കുക",
   navBuy: "നേരിട്ട് വാങ്ങുക",
   navHow: "ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു",
+  navSlots: "സ്ലോട്ട് ബുക്കിംഗ്",
   liveBadge: "തത്സമയം · ഇപ്പോൾ പുതുക്കി",
   heroA: "തത്സമയ വിലകൾ,",
   heroB: "നീതിയുള്ള വിപണികൾ",
@@ -1455,6 +1461,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       setLang,
+<<<<<<< HEAD
       t: (key: string) => {
         const localeDict = ALL_LOCALES[lang];
         if (localeDict && localeDict[key]) return localeDict[key];
@@ -1463,6 +1470,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         if (enLocale && enLocale[key]) return enLocale[key];
         return DICTS.en[key] ?? key;
       },
+=======
+      t: (key: string) => DICTS[lang]?.[key] ?? DICTS["en"]?.[key] ?? key,
+>>>>>>> 0d43f03ed679adadd3c4a4000a3093cda96c9fcb
     }),
     [lang, setLang],
   );

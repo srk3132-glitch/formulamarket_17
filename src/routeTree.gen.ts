@@ -15,6 +15,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RatesRouteImport } from './routes/rates'
 import { Route as SellRouteImport } from './routes/sell'
+import { Route as SlotsRouteImport } from './routes/slots'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const SellRoute = SellRouteImport.update({
   path: '/sell',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SlotsRoute = SlotsRouteImport.update({
+  id: '/slots',
+  path: '/slots',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/rates': typeof RatesRoute
   '/sell': typeof SellRoute
+  '/slots': typeof SlotsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/rates': typeof RatesRoute
   '/sell': typeof SellRoute
+  '/slots': typeof SlotsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,14 +79,23 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/rates': typeof RatesRoute
   '/sell': typeof SellRoute
+  '/slots': typeof SlotsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/buy' | '/how-it-works' | '/login' | '/rates' | '/sell'
+  fullPaths:
+    '/' | '/buy' | '/how-it-works' | '/login' | '/rates' | '/sell' | '/slots'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/buy' | '/how-it-works' | '/login' | '/rates' | '/sell'
+  to: '/' | '/buy' | '/how-it-works' | '/login' | '/rates' | '/sell' | '/slots'
   id:
-    '__root__' | '/' | '/buy' | '/how-it-works' | '/login' | '/rates' | '/sell'
+    | '__root__'
+    | '/'
+    | '/buy'
+    | '/how-it-works'
+    | '/login'
+    | '/rates'
+    | '/sell'
+    | '/slots'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +105,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RatesRoute: typeof RatesRoute
   SellRoute: typeof SellRoute
+  SlotsRoute: typeof SlotsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -134,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/slots': {
+      id: '/slots'
+      path: '/slots'
+      fullPath: '/slots'
+      preLoaderRoute: typeof SlotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -144,6 +169,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RatesRoute: RatesRoute,
   SellRoute: SellRoute,
+  SlotsRoute: SlotsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

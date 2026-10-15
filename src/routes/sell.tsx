@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-store";
 import { buildPrices, formatRupees, type PriceRow } from "@/lib/prices";
 import { getCropImage } from "@/lib/crop-images";
 import { getSupabase } from "@/lib/supabase";
+import { InterfaceModeNav } from "@/components/InterfaceModeNav";
 import {
   Sprout,
   ShieldCheck,
@@ -201,7 +202,12 @@ function SellPage() {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
   // Validation State
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [touched, setTouched] = useState<{
+    price?: boolean;
+    quantity?: boolean;
+    farmer?: boolean;
+    phone?: boolean;
+  }>({});
 
   const stateObj = useMemo(() => findState(selectedStateId), [selectedStateId]);
   const districtObj = useMemo(
@@ -461,9 +467,10 @@ function SellPage() {
         districtId: selectedDistrictId,
         placeId: selectedPlaceId,
         placeName: placeObj.name,
-        farmerId: user?.id,
         status: "active",
+        ...(user?.id ? { farmerId: user.id } : {}),
       });
+
 
       setConfirmedListing(created);
       toast.success("🌾 Harvest published live! Synced across all buyer devices in real-time.", {
@@ -586,10 +593,17 @@ function SellPage() {
   );
 
   return (
+<<<<<<< HEAD
     <main className="relative z-10 mx-auto max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 pb-24 pt-6">
       {/* TASK 2: CENTERED PROMINENT 26 LANGUAGES SELECTOR AT TOP */}
       <LanguageSelector onVoiceTranscript={handleVoiceTranscript} className="mb-8" />
 
+=======
+    <main className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pb-20 pt-6">
+      <div className="hidden md:block mb-6">
+        <InterfaceModeNav currentMode="sell" />
+      </div>
+>>>>>>> 0d43f03ed679adadd3c4a4000a3093cda96c9fcb
       {/* SUCCESS CONFIRMATION STATE */}
       {confirmedListing ? (
         <section className="mx-auto max-w-2xl rounded-3xl border border-emerald-500/30 bg-white/85 p-6 sm:p-10 shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-200">

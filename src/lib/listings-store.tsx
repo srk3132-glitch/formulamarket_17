@@ -44,18 +44,18 @@ export type Listing = {
 
 // Database row mapping helper supporting both standard and legacy schemas
 export function mapDbToListing(row: Record<string, unknown>): Listing {
-  const crop = String(row.crop || row.crop_id || row.cropId || "tomato");
-  const state = String(row.state || row.state_id || row.stateId || "tn");
-  const district = String(row.district || row.district_id || row.districtId || "");
-  const mandi = String(row.mandi || row.place_name || row.placeName || "");
-  const farmer = String(row.farmer_name || row.farmer || "Farmer");
-  const price = Number(row.ask_price ?? row.price ?? 0);
-  const quantity = Number(row.quantity ?? 1);
-  const unit = String(row.unit || "quintal");
-  const status: ListingStatus = (row.status as ListingStatus) || "active";
+  const crop = String(row["crop"] || row["crop_id"] || row["cropId"] || "tomato");
+  const state = String(row["state"] || row["state_id"] || row["stateId"] || "tn");
+  const district = String(row["district"] || row["district_id"] || row["districtId"] || "");
+  const mandi = String(row["mandi"] || row["place_name"] || row["placeName"] || "");
+  const farmer = String(row["farmer_name"] || row["farmer"] || "Farmer");
+  const price = Number(row["ask_price"] ?? row["price"] ?? 0);
+  const quantity = Number(row["quantity"] ?? 1);
+  const unit = String(row["unit"] || "quintal");
+  const status: ListingStatus = (row["status"] as ListingStatus) || "active";
 
-  return {
-    id: String(row.id || `lst_${Date.now()}`),
+  const listing: Listing = {
+    id: String(row["id"] || `lst_${Date.now()}`),
     cropId: crop,
     crop,
     quantity,
@@ -64,21 +64,28 @@ export function mapDbToListing(row: Record<string, unknown>): Listing {
     askPrice: price,
     farmer,
     farmerName: farmer,
-    phone: String(row.phone || ""),
+    phone: String(row["phone"] || ""),
     stateId: state,
     state,
     districtId: district,
     district,
-    placeId: String(row.place_id || mandi.toLowerCase().replace(/\s+/g, "-")),
+    placeId: String(row["place_id"] || mandi.toLowerCase().replace(/\s+/g, "-")),
     placeName: mandi,
     mandi,
-    distanceKm: Number(row.distance_km ?? 5),
+    distanceKm: Number(row["distance_km"] ?? 5),
     status,
-    createdAt: row.created_at || new Date().toISOString(),
-    expiresAt: row.expires_at,
-    farmerId: row.farmer_id,
-    isRealtimeNew: Boolean(row.isRealtimeNew),
+    createdAt: typeof row["created_at"] === "string" ? row["created_at"] : new Date().toISOString(),
+    isRealtimeNew: Boolean(row["isRealtimeNew"]),
   };
+
+  if (typeof row["expires_at"] === "string") {
+    listing.expiresAt = row["expires_at"];
+  }
+  if (typeof row["farmer_id"] === "string") {
+    listing.farmerId = row["farmer_id"];
+  }
+
+  return listing;
 }
 
 export type RealtimeStatus = "connected" | "connecting" | "offline";
@@ -242,15 +249,16 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
 
     if (!supabase || !config.isConfigured) return;
 
+    let cleanup: (() => void) | undefined;
     try {
       const channel = supabase
         .channel("realtime-shared-listings")
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "listings" },
-          (payload) => {
+          (payload: { new: Record<string, unknown> }) => {
             const newRow = payload.new;
-            if (newRow && (!newRow.status || newRow.status === "active")) {
+            if (newRow && (!newRow["status"] || newRow["status"] === "active")) {
               const newListing = mapDbToListing({
                 ...newRow,
                 isRealtimeNew: true,
@@ -267,7 +275,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .on(
           "postgres_changes",
           { event: "UPDATE", schema: "public", table: "listings" },
-          (payload) => {
+          (payload: { new: Record<string, unknown> }) => {
             const updatedRow = payload.new;
             if (updatedRow) {
               const updated = mapDbToListing(updatedRow);
@@ -280,12 +288,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         .on(
           "postgres_changes",
           { event: "DELETE", schema: "public", table: "listings" },
-          (payload) => {
-            const deletedId = String(payload.old?.id);
+          (payload: { old: Record<string, unknown> }) => {
+            const deletedId = String(payload.old?.["id"]);
             setDbListings((prev) => prev.filter((x) => x.id !== deletedId));
           },
         )
-        .on("broadcast", { event: "new_listing" }, ({ payload }) => {
+        .on("broadcast", { event: "new_listing" }, ({ payload }: { payload: Record<string, unknown> }) => {
           if (payload) {
             const newListing = mapDbToListing({
               ...payload,
@@ -299,7 +307,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
             setNewListingAlertCount((c) => c + 1);
           }
         })
-        .subscribe((status) => {
+        .subscribe((status: string) => {
           if (status === "SUBSCRIBED") {
             setRealtimeStatus("connected");
           } else if (status === "CHANNEL_ERROR") {
@@ -332,7 +340,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       window.addEventListener("fm:auth-change", handleAuthChange);
       window.addEventListener("storage", handleAuthChange);
 
-      return () => {
+      cleanup = () => {
         window.clearInterval(pollInterval);
         window.removeEventListener("focus", handleFocus);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -343,6 +351,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("Error subscribing to Supabase Realtime:", err);
     }
+    return cleanup;
   }, [fetchSupabaseListings]);
 
   // addListing: persists into shared Supabase database and broadcasts across all devices
@@ -389,12 +398,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
           l.farmerId,
         )
       ) {
-        standardPayload.farmer_id = l.farmerId;
+        standardPayload["farmer_id"] = l.farmerId;
       } else {
         try {
           const { data: sessionData } = await supabase.auth.getSession();
           if (sessionData?.session?.user?.id) {
-            standardPayload.farmer_id = sessionData.session.user.id;
+            standardPayload["farmer_id"] = sessionData.session.user.id;
           }
         } catch {
           /* ignore */

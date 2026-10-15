@@ -13,22 +13,23 @@ export function getStoredSupabaseConfig() {
     typeof process !== "undefined" ? (process.env as Record<string, string | undefined>) || {} : {};
 
   const envUrl = (
-    metaEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    metaEnv.VITE_SUPABASE_URL ||
-    procEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    procEnv.VITE_SUPABASE_URL ||
+    metaEnv["NEXT_PUBLIC_SUPABASE_URL"] ||
+    metaEnv["VITE_SUPABASE_URL"] ||
+    procEnv["NEXT_PUBLIC_SUPABASE_URL"] ||
+    procEnv["VITE_SUPABASE_URL"] ||
     ""
   ).trim();
 
   const envKey = (
-    metaEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    metaEnv.VITE_SUPABASE_ANON_KEY ||
-    metaEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    procEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    procEnv.VITE_SUPABASE_ANON_KEY ||
+    metaEnv["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ||
+    metaEnv["VITE_SUPABASE_ANON_KEY"] ||
+    metaEnv["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"] ||
+    metaEnv["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    procEnv["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ||
+    procEnv["VITE_SUPABASE_ANON_KEY"] ||
     ""
   ).trim();
+
 
   let storedUrl = "";
   let storedKey = "";
