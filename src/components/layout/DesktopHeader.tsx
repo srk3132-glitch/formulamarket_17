@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { LANGS, useI18n } from "@/lib/i18n";
-import { LanguageDropdown } from "@/components/common/LanguageDropdown";
+import { useI18n } from "@/lib/i18n";
+import { HorizontalLanguageSelector } from "@/components/common/HorizontalLanguageSelector";
 import { useAuth } from "@/lib/auth-store";
 import {
   Sprout,
@@ -351,10 +351,13 @@ export function DesktopHeader() {
             </div>
           )}
 
-          {/* Desktop 26-Language Down-By-Down Dropdown Menu */}
-          <LanguageDropdown showQuickPills={true} />
         </div>
       </nav>
+
+      {/* 26 Indian Languages Horizontal Scrolling Ribbon (Horizontal only, no vertical bar) */}
+      <div className="mx-auto max-w-6xl mt-2 px-1">
+        <HorizontalLanguageSelector />
+      </div>
 
       {/* Tablet Navigation Drawer / Dropdown (<1024px) */}
       {tabletMenuOpen && (

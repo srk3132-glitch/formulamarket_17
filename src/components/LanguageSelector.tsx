@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { HorizontalLanguageSelector } from "@/components/common/HorizontalLanguageSelector";
 import type { Lang } from "@/lib/regions";
 import {
   Globe,
@@ -8,7 +9,6 @@ import {
   VolumeX,
   Mic,
   MicOff,
-  ChevronDown,
   Sparkles,
 } from "lucide-react";
 
@@ -32,20 +32,6 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
     isListening,
     speechSupported,
   } = useTranslation();
-
-  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close mobile dropdown when clicked outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setMobileDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleMicClick = () => {
     if (isListening) {
@@ -158,72 +144,12 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
         </div>
       </div>
 
-      {/* 26 LANGUAGES CLEAR DOWN-BY-DOWN DROPDOWN SELECTOR (Mobile & Desktop) */}
-      <div className="mt-3" ref={dropdownRef}>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-xs font-semibold text-brand-deep">
-            {t("languageSelectorTitle")} ({languages.length} Languages)
-          </label>
-          <span className="text-[11px] font-semibold text-brand">
-            Clear Down-by-Down Options ▾
-          </span>
-        </div>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMobileDropdownOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between rounded-2xl border border-brand/25 bg-white/90 px-4 py-3 text-sm font-semibold text-brand-deep shadow-2xs transition hover:bg-white min-h-[46px]"
-            aria-expanded={mobileDropdownOpen}
-          >
-            <div className="flex items-center gap-2 truncate">
-              <span className="font-bold text-base text-brand">{currentLanguage.nativeName}</span>
-              <span className="text-xs text-brand-deep/60 font-medium">({currentLanguage.name})</span>
-              {currentLanguage.dir === "rtl" && (
-                <span className="text-[10px] bg-amber-100 text-amber-800 rounded px-1 font-bold">
-                  RTL
-                </span>
-              )}
-            </div>
-            <ChevronDown
-              className={`size-4 text-brand-deep/70 transition-transform ${
-                mobileDropdownOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {mobileDropdownOpen && (
-            <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-72 overflow-y-auto rounded-2xl border border-white/80 bg-white/98 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {languages.map((l) => {
-                  const isActive = lang === l.code;
-                  return (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => {
-                        setLang(l.code);
-                        setMobileDropdownOpen(false);
-                      }}
-                      className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition min-h-[44px] ${
-                        isActive
-                          ? "bg-brand text-white font-bold shadow-sm"
-                          : "hover:bg-brand/10 text-brand-deep font-medium"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="text-sm font-bold">{l.nativeName}</span>
-                        <span className={`text-xs ${isActive ? "text-white/80" : "text-brand-deep/60"}`}>
-                          ({l.name})
-                        </span>
-                      </div>
-                      {isActive && <Check className="size-4 shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+      {/* 26 LANGUAGES HORIZONTAL SLIDING SELECTOR (Horizontal only, no vertical bar) */}
+      <div className="mt-3 block lg:hidden">
+        <label className="block text-xs font-semibold text-brand-deep mb-2">
+          {t("languageSelectorTitle")} ({languages.length} Languages)
+        </label>
+        <HorizontalLanguageSelector />
       </div>
 
       {/* DESKTOP 6 TO 7 COLUMN GRID (>= 1024px / laptop & desktop screens) */}
