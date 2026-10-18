@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { useI18n, type Lang } from "@/lib/i18n";
+import type { Lang } from "@/lib/regions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ChevronLeft, ChevronRight, Globe } from "lucide-react";
 
 export interface LanguageItem {
@@ -47,7 +48,7 @@ export function HorizontalLanguageSelector({
   className = "",
   isMobile = false,
 }: HorizontalLanguageSelectorProps) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, speakWelcome } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -173,7 +174,10 @@ export function HorizontalLanguageSelector({
                 key={l.id}
                 data-lang={l.id}
                 type="button"
-                onClick={() => setLang(l.id)}
+                onClick={() => {
+                  setLang(l.id);
+                  speakWelcome(l.id);
+                }}
                 aria-pressed={isActive}
                 title={`${l.label} (${l.englishLabel})`}
                 style={{

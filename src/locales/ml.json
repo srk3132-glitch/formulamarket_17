@@ -172,7 +172,7 @@
   "voiceOutputPlaying": "Playing voice guidance...",
   "voiceUnsupported": "Voice recognition is not supported in this browser.",
   "voiceError": "Voice input error. Please try again or type manually.",
-  "voiceGuidePrompt": "Welcome to the sell portal. Select your crop, set your quantity and ask price, enter your phone number, and publish your harvest directly to buyers with zero commission.",
+  "voiceGuidePrompt": "കർഷക പോർട്ടലിലേക്ക് സ്വാഗതം. നിങ്ങളുടെ വിള തിരഞ്ഞെടുക്കുക, അളവും വിലയും രേഖപ്പെടുത്തുക, മൊബൈൽ നമ്പർ നൽകി കമ്മീഷനില്ലാതെ നേരിട്ട് വാങ്ങുന്നവർക്ക് വിൽക്കുക.",
   "allLanguages": "All 26 Languages",
   "cropDetailsHeading": "1. Crop & Harvest Details",
   "pricingLocationHeading": "2. Quantity, Price & Location",

@@ -3,6 +3,14 @@ import { ALL_LOCALES, LANGUAGES_26, type LanguageMeta } from "@/locales";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/regions";
 import { toast } from "sonner";
+import {
+  VOICE_GUIDE_PROMPTS,
+  VOICE_WELCOME_PROMPTS,
+  detectLanguageFromTranscript,
+  findBestVoice,
+} from "@/locales/voicePrompts";
+
+export { detectLanguageFromTranscript };
 
 // Web Speech API interface declarations
 interface SpeechRecognitionEvent extends Event {
@@ -38,6 +46,25 @@ export function useTranslation() {
   const { lang, setLang, t: baseT } = useI18n();
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  // Pre-load and cache browser voices when available
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const updateVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length > 0) {
+        setAvailableVoices(v);
+      }
+    };
+
+    updateVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", updateVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", updateVoices);
+    };
+  }, []);
 
   const currentMeta = useMemo<LanguageMeta>(() => {
     return (
@@ -78,13 +105,16 @@ export function useTranslation() {
       document.documentElement.lang = currentMeta.code;
       document.documentElement.dir = isRTL ? "rtl" : "ltr";
       document.documentElement.setAttribute("data-lang", currentMeta.code);
-      document.documentElement.style.setProperty("--font-current-script", currentMeta.fontFamily || currentMeta.font || "");
+      document.documentElement.style.setProperty(
+        "--font-current-script",
+        currentMeta.fontFamily || currentMeta.font || "",
+      );
     }
   }, [currentMeta]);
 
-  // Voice Output (Speech Synthesis)
+  // Voice Output (Speech Synthesis) - speaks exclusively in the selected language
   const speak = useCallback(
-    (textToSpeak?: string) => {
+    (textToSpeak?: string, targetLang?: Lang) => {
       if (typeof window === "undefined" || !("speechSynthesis" in window)) {
         toast.error(t("voiceUnsupported"));
         return;
@@ -92,26 +122,53 @@ export function useTranslation() {
 
       window.speechSynthesis.cancel();
 
-      const text = textToSpeak || t("voiceGuidePrompt");
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = currentMeta.speechLang;
+      const langToUse = targetLang || lang;
+      const meta =
+        LANGUAGES_26.find((l) => l.code === langToUse) || currentMeta;
 
-      // Find matching voice if available
-      const voices = window.speechSynthesis.getVoices();
-      const matchingVoice = voices.find(
-        (v) =>
-          v.lang.toLowerCase() === currentMeta.speechLang.toLowerCase() ||
-          v.lang.toLowerCase().startsWith(currentMeta.code),
-      );
-      if (matchingVoice) utterance.voice = matchingVoice;
+      // Authentic localized text guaranteed for all 26 languages
+      const text =
+        textToSpeak ||
+        VOICE_GUIDE_PROMPTS[langToUse] ||
+        t("voiceGuidePrompt");
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = meta.speechLang;
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      // Find matching voice from system/browser (Google, Microsoft, Apple, Android)
+      const voices =
+        availableVoices.length > 0
+          ? availableVoices
+          : window.speechSynthesis.getVoices();
+      const matchingVoice = findBestVoice(voices, meta.code, meta.speechLang);
+      if (matchingVoice) {
+        utterance.voice = matchingVoice;
+      }
 
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onerror = (e) => {
+        console.warn("SpeechSynthesis error:", e);
+        setIsSpeaking(false);
+      };
 
       window.speechSynthesis.speak(utterance);
     },
-    [currentMeta, t],
+    [availableVoices, currentMeta, lang, t],
+  );
+
+  // Short spoken greeting when a language is selected or auto-detected
+  const speakWelcome = useCallback(
+    (targetLang?: Lang) => {
+      const langToUse = targetLang || lang;
+      const welcomeText =
+        VOICE_WELCOME_PROMPTS[langToUse] ||
+        VOICE_GUIDE_PROMPTS[langToUse];
+      speak(welcomeText, langToUse);
+    },
+    [lang, speak],
   );
 
   const stopSpeaking = useCallback(() => {
@@ -121,9 +178,9 @@ export function useTranslation() {
     }
   }, []);
 
-  // Voice Input (Speech Recognition)
+  // Voice Input (Speech Recognition with Auto Language Recognition)
   const listen = useCallback(
-    (onResult: (text: string) => void, onError?: (err: unknown) => void) => {
+    (onResult?: (text: string) => void, onError?: (err: unknown) => void) => {
       if (typeof window === "undefined") return;
 
       const SpeechRecognitionClass =
@@ -141,12 +198,34 @@ export function useTranslation() {
         recognition.interimResults = false;
 
         setIsListening(true);
-        toast.info(`🎤 ${t("voiceInputListening")} (${currentMeta.nativeName})`);
+        toast.info(
+          `🎤 ${t("voiceInputListening")} (${currentMeta.nativeName}) — Speak in any language to auto-detect`,
+          { duration: 4000 },
+        );
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
           const transcript = event.results[0]?.[0]?.transcript;
           if (transcript) {
-            onResult(transcript);
+            // Intelligent Language Recognition: Detect language from speech
+            const recognizedLang = detectLanguageFromTranscript(transcript);
+
+            if (recognizedLang) {
+              const matchedMeta = LANGUAGES_26.find((l) => l.code === recognizedLang);
+              if (matchedMeta) {
+                // Switch language immediately
+                setLang(recognizedLang);
+                toast.success(
+                  `🎯 Language recognized: ${matchedMeta.nativeName} (${matchedMeta.name}) — Switched automatically!`,
+                  { duration: 5000 },
+                );
+                // Voice assistant immediately speaks in the recognized language
+                speakWelcome(recognizedLang);
+              }
+            }
+
+            if (onResult) {
+              onResult(transcript);
+            }
             toast.success(`🗣️ "${transcript}"`);
           }
           setIsListening(false);
@@ -169,7 +248,7 @@ export function useTranslation() {
         if (onError) onError(err);
       }
     },
-    [currentMeta, t],
+    [currentMeta, setLang, speakWelcome, t],
   );
 
   const stopListening = useCallback(() => {
@@ -190,6 +269,7 @@ export function useTranslation() {
         "SpeechRecognition" in window ||
         "webkitSpeechRecognition" in window),
     speak,
+    speakWelcome,
     stopSpeaking,
     isSpeaking,
     listen,

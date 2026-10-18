@@ -10,6 +10,7 @@ import {
   Mic,
   MicOff,
   Sparkles,
+  Radio,
 } from "lucide-react";
 
 interface LanguageSelectorProps {
@@ -25,6 +26,7 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
     currentLanguage,
     t,
     speak,
+    speakWelcome,
     stopSpeaking,
     isSpeaking,
     listen,
@@ -49,9 +51,15 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
     if (isSpeaking) {
       stopSpeaking();
     } else {
-      const guidance = t("voiceGuidePrompt");
-      speak(guidance);
+      // Speaks exclusively in the selected language
+      speak();
     }
+  };
+
+  const handleSelectLanguage = (targetCode: Lang) => {
+    setLang(targetCode);
+    // Voice assistant speaks immediately in the newly selected language!
+    speakWelcome(targetCode);
   };
 
   return (
@@ -76,31 +84,39 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
               </span>
             </div>
             <p className="text-xs text-brand-deep/70">
-              {t("selectLanguagePrompt")} · {currentLanguage.nativeName} ({currentLanguage.name})
+              {t("selectLanguagePrompt")} · <span className="font-semibold text-brand-deep">{currentLanguage.nativeName} ({currentLanguage.name})</span>
             </p>
           </div>
         </div>
 
         {/* Voice Input & Output Controls */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
           {speechSupported && (
             <>
-              {/* Text-to-Speech Output Button */}
+              {/* Text-to-Speech Output Button (Speaks in Selected Language Only) */}
               <button
                 type="button"
                 onClick={handleSpeakerClick}
-                title={isSpeaking ? "Stop Voice Assistant" : "Listen in " + currentLanguage.name}
-                aria-label={isSpeaking ? "Stop Voice Assistant" : "Listen in " + currentLanguage.name}
+                title={
+                  isSpeaking
+                    ? "Stop Voice Assistant"
+                    : `Voice Assistant · Speaks in ${currentLanguage.nativeName} (${currentLanguage.name})`
+                }
+                aria-label={
+                  isSpeaking
+                    ? "Stop Voice Assistant"
+                    : `Voice Assistant · Speaks in ${currentLanguage.nativeName} (${currentLanguage.name})`
+                }
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all shadow-2xs ${
                   isSpeaking
-                    ? "bg-amber-500 text-white animate-pulse"
+                    ? "bg-amber-500 text-white animate-pulse ring-2 ring-amber-400/50"
                     : "border border-brand/25 bg-white/80 text-brand-deep hover:bg-white hover:text-brand"
                 }`}
               >
                 {isSpeaking ? (
                   <>
                     <VolumeX className="size-3.5" />
-                    <span>Stop</span>
+                    <span>Stop ({currentLanguage.name})</span>
                   </>
                 ) : (
                   <>
@@ -110,22 +126,30 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
                 )}
               </button>
 
-              {/* Speech-to-Text Input Button */}
+              {/* Speech-to-Text Input Button (Listens & Auto-detects Language) */}
               <button
                 type="button"
                 onClick={handleMicClick}
-                title={isListening ? "Listening... click to stop" : "Speak using Web Speech API"}
-                aria-label={isListening ? "Listening... click to stop" : "Speak using Web Speech API"}
+                title={
+                  isListening
+                    ? "Listening... speak now in any language"
+                    : "Voice Input · Speak in any Indian language to auto-detect and select"
+                }
+                aria-label={
+                  isListening
+                    ? "Listening... speak now in any language"
+                    : "Voice Input · Speak in any Indian language to auto-detect and select"
+                }
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all shadow-2xs ${
                   isListening
-                    ? "bg-red-500 text-white animate-pulse"
+                    ? "bg-red-500 text-white animate-pulse ring-2 ring-red-400/50"
                     : "border border-brand/25 bg-white/80 text-brand-deep hover:bg-white hover:text-brand"
                 }`}
               >
                 {isListening ? (
                   <>
                     <MicOff className="size-3.5" />
-                    <span>Listening...</span>
+                    <span>Auto-Detecting...</span>
                   </>
                 ) : (
                   <>
@@ -139,12 +163,22 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
 
           {/* Active Script Badge */}
           <span className="rounded-full bg-brand/10 border border-brand/20 px-2.5 py-1 text-[11px] font-bold text-brand-deep shrink-0">
-            {currentLanguage.code.toUpperCase()}
+            {currentLanguage.code.toUpperCase()} · {currentLanguage.nativeName}
           </span>
         </div>
       </div>
 
-      {/* 26 LANGUAGES HORIZONTAL SLIDING SELECTOR (Horizontal only, no vertical bar) */}
+      {/* Voice Assistant Auto-Detection Status Banner */}
+      {isListening && (
+        <div className="mt-3 rounded-xl bg-gradient-to-r from-red-50 to-amber-50 border border-red-200/80 p-2.5 flex items-center gap-2 animate-in fade-in duration-200">
+          <Radio className="size-4 text-red-500 animate-pulse shrink-0" />
+          <span className="text-xs font-medium text-red-950">
+            🎙️ <strong>Listening actively:</strong> Speak in <em>any</em> Indian language (e.g. Telugu, Tamil, Hindi, Marathi, Bengali, Kannada...) or say crop names. The system will recognize your language and switch automatically!
+          </span>
+        </div>
+      )}
+
+      {/* 26 LANGUAGES HORIZONTAL SLIDING SELECTOR (Mobile & Tablet view) */}
       <div className="mt-3 block lg:hidden">
         <label className="block text-xs font-semibold text-brand-deep mb-2">
           {t("languageSelectorTitle")} ({languages.length} Languages)
@@ -160,10 +194,10 @@ export function LanguageSelector({ onVoiceTranscript, className = "" }: Language
             <button
               key={item.code}
               type="button"
-              onClick={() => setLang(item.code)}
+              onClick={() => handleSelectLanguage(item.code)}
               aria-pressed={isActive}
-              title={`${item.nativeName} (${item.name})`}
-              className={`group relative flex flex-col items-center justify-center rounded-2xl px-2.5 py-2.5 text-center transition-all duration-200 select-none min-h-[54px] ${
+              title={`${item.nativeName} (${item.name}) · Click to select & hear voice assistant`}
+              className={`group relative flex flex-col items-center justify-center rounded-2xl px-2.5 py-2.5 text-center transition-all duration-200 select-none min-h-[54px] cursor-pointer ${
                 isActive
                   ? "bg-brand text-white shadow-md shadow-brand/25 ring-2 ring-brand/40 font-bold scale-[1.02]"
                   : "border border-white/80 bg-white/70 text-brand-deep/90 hover:bg-white hover:border-brand/35 hover:shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
