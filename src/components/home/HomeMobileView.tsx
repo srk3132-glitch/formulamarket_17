@@ -66,22 +66,22 @@ export default function HomeMobileView() {
       </section>
 
       {/* 3. Stats as 3 Compact Tiles / Swipeable Row */}
-      <section className="grid grid-cols-3 gap-2 text-center" aria-label="Key marketplace stats">
-        <div className="rounded-2xl border border-white/70 bg-white/70 p-3 shadow-xs">
-          <p className="font-display text-xl font-bold text-brand-deep">111</p>
-          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70">
+      <section className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center" aria-label="Key marketplace stats">
+        <div className="rounded-2xl border border-white/70 bg-white/70 p-2 sm:p-3 shadow-xs min-w-0">
+          <p className="font-display text-lg sm:text-xl font-bold text-brand-deep truncate">111</p>
+          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70 truncate">
             Districts
           </p>
         </div>
-        <div className="rounded-2xl border border-white/70 bg-white/70 p-3 shadow-xs">
-          <p className="font-display text-xl font-bold text-brand-deep">39</p>
-          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70">
+        <div className="rounded-2xl border border-white/70 bg-white/70 p-2 sm:p-3 shadow-xs min-w-0">
+          <p className="font-display text-lg sm:text-xl font-bold text-brand-deep truncate">39</p>
+          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70 truncate">
             Commodities
           </p>
         </div>
-        <div className="rounded-2xl border border-white/70 bg-white/70 p-3 shadow-xs">
-          <p className="font-display text-xl font-bold text-emerald-800">0%</p>
-          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70">
+        <div className="rounded-2xl border border-white/70 bg-white/70 p-2 sm:p-3 shadow-xs min-w-0">
+          <p className="font-display text-lg sm:text-xl font-bold text-emerald-800 truncate">0%</p>
+          <p className="mt-0.5 text-[10px] font-semibold leading-tight text-brand-deep/70 truncate">
             Commission
           </p>
         </div>

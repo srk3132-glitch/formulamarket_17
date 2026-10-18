@@ -12,7 +12,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   // If not mounted yet (SSR), render a responsive wrapper using CSS media queries
   // to avoid hydration shift
   return (
-    <div className="relative min-h-screen text-ink">
+    <div className="relative min-h-screen text-ink overflow-x-clip w-full max-w-full">
       {/* Background ambient gradient glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="glow-1 absolute -left-32 -top-40 h-[520px] w-[520px] rounded-full bg-brand/30 blur-3xl" />
@@ -25,7 +25,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
           /* Phone Layout */
           <div className="relative z-10 flex min-h-screen flex-col">
             <MobileTopBar />
-            <div className="flex-1 pb-20">{children}</div>
+            <div className="flex-1 pb-20">
+              {children}
+              <footer className="px-4 pt-6 pb-2 text-center text-[11px] text-brand-deep/50 leading-relaxed">
+                {t("footer")}
+              </footer>
+            </div>
             <MobileBottomNav />
           </div>
         ) : (

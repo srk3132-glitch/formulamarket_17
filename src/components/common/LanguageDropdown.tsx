@@ -87,9 +87,9 @@ export function LanguageDropdown({
 
   return (
     <div className={`relative flex items-center gap-2 ${className}`} ref={dropdownRef}>
-      {/* Optional Top Quick Language Pills */}
+      {/* Optional Top Quick Language Pills (shown only on extra wide screens to avoid header crowding) */}
       {showQuickPills && (
-        <div className="hidden xl:flex items-center gap-1 rounded-full border border-white/70 bg-white/55 p-0.5 backdrop-blur-xl shadow-xs">
+        <div className="hidden 2xl:flex items-center gap-1 rounded-full border border-white/70 bg-white/55 p-0.5 backdrop-blur-xl shadow-xs shrink-0">
           {topQuickLangs.map((id) => {
             const item = LANGS.find((l) => l.id === id);
             if (!item) return null;
@@ -101,8 +101,8 @@ export function LanguageDropdown({
                 onClick={() => selectLanguage(id as Lang)}
                 className={
                   isActive
-                    ? "rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm transition-all"
-                    : "rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition hover:bg-white/70 hover:text-brand-deep"
+                    ? "rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm transition-all whitespace-nowrap"
+                    : "rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition hover:bg-white/70 hover:text-brand-deep whitespace-nowrap"
                 }
               >
                 {item.label}
@@ -119,24 +119,24 @@ export function LanguageDropdown({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label="Select from all 26 official languages"
-        className="group flex items-center gap-2 rounded-full border border-brand/25 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-brand-deep shadow-xs backdrop-blur-xl transition hover:border-brand/50 hover:bg-white active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        className="group flex items-center gap-1.5 sm:gap-2 rounded-full border border-brand/25 bg-white/80 px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-brand-deep shadow-xs backdrop-blur-xl transition hover:border-brand/50 hover:bg-white active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand shrink-0 whitespace-nowrap"
       >
-        <span className="grid size-5 place-items-center rounded-full bg-brand/10 text-brand group-hover:bg-brand group-hover:text-white transition">
+        <span className="grid size-5 place-items-center rounded-full bg-brand/10 text-brand group-hover:bg-brand group-hover:text-white transition shrink-0">
           <Globe className="size-3.5" />
         </span>
-        <span className="flex items-center gap-1.5 leading-none">
-          <span className="font-bold text-brand-deep text-xs sm:text-[13px]">
+        <span className="flex items-center gap-1.5 leading-tight py-0.5">
+          <span className="font-bold text-brand-deep text-xs sm:text-[13px] whitespace-nowrap">
             {currentLang.label}
           </span>
-          <span className="text-[11px] font-medium text-brand-deep/60 hidden sm:inline">
+          <span className="text-[11px] font-medium text-brand-deep/60 hidden xl:inline whitespace-nowrap">
             ({currentLang.englishLabel})
           </span>
         </span>
-        <span className="rounded-full bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold text-brand hidden md:inline">
+        <span className="rounded-full bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold text-brand hidden sm:inline-flex">
           26
         </span>
         <ChevronDown
-          className={`size-3.5 text-brand-deep/60 transition-transform duration-200 ${
+          className={`size-3.5 text-brand-deep/60 transition-transform duration-200 shrink-0 ${
             isOpen ? "rotate-180 text-brand" : "group-hover:text-brand-deep"
           }`}
         />
@@ -147,7 +147,7 @@ export function LanguageDropdown({
         <div
           role="listbox"
           aria-label="26 Official Indian Languages"
-          className={`absolute top-full mt-2 z-50 w-72 sm:w-80 rounded-2xl border border-white/80 bg-white/95 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 ${
+          className={`absolute top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-white/80 bg-white/95 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
@@ -155,11 +155,37 @@ export function LanguageDropdown({
           <div className="flex items-center justify-between px-2 py-1.5 border-b border-brand-deep/10">
             <div>
               <p className="text-xs font-bold text-brand-deep">Select Language</p>
-              <p className="text-[10px] text-brand-deep/60">All 26 Official Indian Languages</p>
+              <p className="text-[10px] text-brand-deep/60">26 Official Regional Indian Languages</p>
             </div>
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
               26 Options
             </span>
+          </div>
+
+          {/* Quick 1-Click Popular Language Pills inside Dropdown */}
+          <div className="flex flex-wrap items-center gap-1 px-1 pt-2 pb-1">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-brand-deep/50 w-full mb-0.5">
+              Popular:
+            </span>
+            {topQuickLangs.map((id) => {
+              const item = LANGS.find((l) => l.id === id);
+              if (!item) return null;
+              const isActive = lang === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => selectLanguage(id as Lang)}
+                  className={
+                    isActive
+                      ? "rounded-lg bg-brand px-2 py-0.5 text-[10px] font-bold text-white shadow-xs"
+                      : "rounded-lg border border-brand/20 bg-brand/5 px-2 py-0.5 text-[10px] font-medium text-brand-deep hover:bg-brand/10"
+                  }
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Search Input for Fast Access */}

@@ -298,8 +298,8 @@ export default function RatesMobileView() {
                   </div>
 
                   {/* Bottom Row: Min-Max range + 1-Tap Sell/Buy buttons */}
-                  <div className="mt-3 pt-2.5 border-t border-brand-deep/5 flex items-center justify-between gap-2">
-                    <div className="text-[11px] text-brand-deep/70 font-medium">
+                  <div className="mt-3 pt-2.5 border-t border-brand-deep/5 flex items-center justify-between gap-2 min-w-0">
+                    <div className="text-[11px] text-brand-deep/70 font-medium truncate min-w-0">
                       Range:{" "}
                       <strong>
                         {unitMode === "kg" ? `₹${kgMin}` : formatRupees(item.min)}

@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { TrendingUp, ShoppingBag, Sprout, HelpCircle } from "lucide-react";
+import { TrendingUp, ShoppingBag, Sprout, Calendar, HelpCircle } from "lucide-react";
 
 export function MobileBottomNav() {
   const { t } = useI18n();
@@ -30,6 +30,13 @@ export function MobileBottomNav() {
       activeColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
     },
     {
+      id: "slots",
+      to: "/slots",
+      label: t("navSlots") || "Slots",
+      icon: Calendar,
+      activeColor: "text-blue-700 bg-blue-50 border-blue-200",
+    },
+    {
       id: "how",
       to: "/how-it-works",
       label: t("navHow"),
@@ -43,7 +50,7 @@ export function MobileBottomNav() {
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-brand-deep/10 bg-white/95 backdrop-blur-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.06)] pb-safe"
       aria-label="Mobile navigation"
     >
-      <div className="grid grid-cols-4 h-16 max-w-md mx-auto items-center px-1">
+      <div className="grid grid-cols-5 h-16 max-w-md mx-auto items-center px-0.5">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentPath === tab.to;

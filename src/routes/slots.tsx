@@ -134,11 +134,11 @@ function SlotBookingPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-2xl border border-white/80 bg-white/60 p-2 shadow-sm">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 rounded-2xl border border-white/80 bg-white/60 p-1.5 sm:p-2 shadow-sm w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab("farmer_mandi")}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+              className={`flex-1 sm:flex-initial text-center whitespace-nowrap min-h-[40px] rounded-xl px-3 sm:px-4 py-2 text-xs font-bold transition ${
                 activeTab === "farmer_mandi"
                   ? "bg-teal-700 text-white shadow-sm"
                   : "text-brand-deep/70 hover:bg-white/80"
@@ -149,7 +149,7 @@ function SlotBookingPage() {
             <button
               type="button"
               onClick={() => setActiveTab("buyer_pickup")}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+              className={`flex-1 sm:flex-initial text-center whitespace-nowrap min-h-[40px] rounded-xl px-3 sm:px-4 py-2 text-xs font-bold transition ${
                 activeTab === "buyer_pickup"
                   ? "bg-amber-800 text-white shadow-sm"
                   : "text-brand-deep/70 hover:bg-white/80"
@@ -160,13 +160,13 @@ function SlotBookingPage() {
             <button
               type="button"
               onClick={() => setActiveTab("my_passes")}
-              className={`relative rounded-xl px-4 py-2 text-xs font-bold transition ${
+              className={`flex-1 sm:flex-initial text-center whitespace-nowrap min-h-[40px] relative rounded-xl px-3 sm:px-4 py-2 text-xs font-bold transition ${
                 activeTab === "my_passes"
                   ? "bg-brand text-white shadow-sm"
                   : "text-brand-deep/70 hover:bg-white/80"
               }`}
             >
-              My Booked Passes ({slots.length})
+              My Passes ({slots.length})
             </button>
           </div>
         </div>
@@ -248,7 +248,7 @@ function SlotBookingPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                  <div className="mt-4 grid grid-cols-1 xs:grid-cols-2 gap-2.5 text-xs">
                     <div className="rounded-xl bg-brand-deep/5 p-2.5">
                       <p className="text-brand-deep/50 uppercase tracking-wider text-[10px] font-semibold">
                         Commodity & Lot
@@ -289,17 +289,17 @@ function SlotBookingPage() {
                   </div>
 
                   {/* SMS Delivery Badge */}
-                  <div className="mt-4 flex items-center justify-between border-t border-brand-deep/10 pt-3 text-[11px]">
-                    <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-brand-deep/10 pt-3 text-[11px]">
+                    <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium shrink-0">
                       <Phone className="size-3" />
                       Twilio Live SMS Verified
                     </span>
 
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
                         onClick={() => window.print()}
-                        className="inline-flex items-center gap-1 rounded-lg border border-brand-deep/20 bg-white px-2.5 py-1 text-brand-deep hover:bg-gray-50"
+                        className="inline-flex items-center gap-1 rounded-lg border border-brand-deep/20 bg-white px-2.5 py-1 text-brand-deep hover:bg-gray-50 min-h-[32px]"
                       >
                         <Printer className="size-3" />
                         Print Pass
@@ -308,7 +308,7 @@ function SlotBookingPage() {
                         <button
                           type="button"
                           onClick={() => cancelSlot(s.id)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-red-700 hover:bg-red-100"
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-red-700 hover:bg-red-100 min-h-[32px]"
                         >
                           <XCircle className="size-3" />
                           Cancel
@@ -344,7 +344,7 @@ function SlotBookingPage() {
               </div>
 
               {/* Crop & Quantity */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-brand-deep/70 mb-1.5">
                     Crop / Commodity
@@ -380,7 +380,7 @@ function SlotBookingPage() {
               </div>
 
               {/* Date & Time Window */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-brand-deep/70 mb-1.5">
                     Arrival Date
@@ -414,7 +414,7 @@ function SlotBookingPage() {
               </div>
 
               {/* Vehicle Type & Reg */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-brand-deep/70 mb-1.5">
                     Transport Vehicle
@@ -448,7 +448,7 @@ function SlotBookingPage() {
               </div>
 
               {/* Name & Phone */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-brand-deep/70 mb-1.5">
                     Driver / Producer Name

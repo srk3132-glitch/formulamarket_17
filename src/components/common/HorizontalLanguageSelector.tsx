@@ -191,8 +191,8 @@ export function HorizontalLanguageSelector({
                 }}
                 className={
                   isActive
-                    ? "shrink-0 whitespace-nowrap rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand scale-102"
-                    : "shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition-colors hover:bg-white/70 hover:text-brand-deep focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+                    ? "shrink-0 whitespace-nowrap rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand scale-102 leading-tight"
+                    : "shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold text-brand-deep/70 transition-colors hover:bg-white/70 hover:text-brand-deep focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand leading-tight"
                 }
               >
                 {l.label}
@@ -233,7 +233,7 @@ export function HorizontalLanguageSelector({
           aria-expanded={dropdownOpen}
           title="Open all 26 languages down by down as options"
           aria-label="Open all 26 languages down by down as options"
-          className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold shadow-xs transition ${
+          className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold shadow-xs transition shrink-0 ${
             dropdownOpen
               ? "border-brand bg-brand text-white shadow-sm"
               : "border-brand/25 bg-white/85 text-brand-deep hover:bg-white hover:text-brand"
@@ -251,7 +251,7 @@ export function HorizontalLanguageSelector({
           <div
             role="listbox"
             aria-label="All 26 languages down by down"
-            className="absolute right-0 top-full mt-2 z-50 w-72 max-h-72 overflow-y-auto rounded-2xl border border-white/80 bg-white/98 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150"
+            className="absolute right-0 top-full mt-2 z-50 w-72 max-w-[calc(100vw-1.5rem)] max-h-72 overflow-y-auto rounded-2xl border border-white/80 bg-white/98 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between px-2 py-1.5 border-b border-brand-deep/10 text-[11px] font-bold text-brand-deep">
               <span>All 26 Languages</span>

@@ -153,14 +153,14 @@ export default function BuyMobileView() {
           </div>
         </div>
       ) : user?.role === "seller" ? (
-        <div className="flex items-center justify-between rounded-2xl border border-emerald-600/30 bg-emerald-50/80 p-3 text-xs text-emerald-950">
-          <span>Signed in as Farmer ({user.name}). Want wholesale procurement?</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-emerald-600/30 bg-emerald-50/80 p-3 text-xs text-emerald-950">
+          <span className="truncate min-w-0 flex-1">Farmer: {user.name}</span>
           <button
             type="button"
             onClick={() => switchRole("buyer")}
-            className="font-bold text-emerald-900 underline ml-2"
+            className="font-bold text-emerald-900 underline shrink-0 min-h-[32px] px-2"
           >
-            Switch
+            Switch to Buyer
           </button>
         </div>
       ) : null}
