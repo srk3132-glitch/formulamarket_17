@@ -6,6 +6,7 @@ import { CROPS, cropName, useI18n, type CropCategory } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-store";
 import { formatRupees, useLivePrices } from "@/lib/prices";
 import { RatesEmptyState } from "@/components/common/RatesEmptyState";
+import { getCropImage } from "@/lib/crop-images";
 import {
   TrendingUp,
   TrendingDown,
@@ -136,6 +137,7 @@ export default function RatesDesktopView() {
             <div className="animate-ticker flex items-center gap-2.5 group-hover/ticker:[animation-play-state:paused]">
               {[...rawPrices, ...rawPrices].map((item, idx) => {
                 const isUp = item.changePct > 0;
+                const cropImg = getCropImage(item.cropId);
                 const rateText =
                   unitMode === "kg"
                     ? `₹${(item.modal / 100).toFixed(1)}/kg`
@@ -145,8 +147,15 @@ export default function RatesDesktopView() {
                     key={`${item.cropId}-${idx}`}
                     type="button"
                     onClick={() => setSearchQuery(cropName(item.cropId, lang))}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/70 px-3 py-1 text-xs font-semibold text-brand-deep shadow-xs transition hover:bg-white hover:scale-105 active:scale-95"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 pl-1.5 pr-3 py-1 text-xs font-semibold text-brand-deep shadow-xs transition hover:bg-white hover:scale-105 active:scale-95"
                   >
+                    <img
+                      src={cropImg.src}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="size-5 rounded-full object-cover shrink-0"
+                    />
                     <span>{cropName(item.cropId, lang)}</span>
                     <span className="font-bold text-ink">{rateText}</span>
                     <span
@@ -363,27 +372,42 @@ export default function RatesDesktopView() {
                 const kgMin = (item.min / 100).toFixed(1);
                 const kgMax = (item.max / 100).toFixed(1);
 
+                const cropImg = getCropImage(item.cropId);
+
                 return (
                   <article
                     key={item.cropId}
                     className="card-interactive group flex flex-col justify-between rounded-3xl border border-white/70 bg-white/55 p-5 shadow-[var(--shadow-glass-sm)] backdrop-blur-2xl transition hover:border-teal-600/50 hover:bg-white/85"
                   >
                     <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="inline-block rounded-full bg-black/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-deep/60">
-                            {item.category.replace("_", " ")}
-                          </span>
-                          <h3 className="mt-1 font-display text-lg font-bold text-brand-deep group-hover:text-teal-900 transition-colors">
-                            {cropName(item.cropId, lang)}
-                          </h3>
-                          <p className="text-[11px] text-brand-deep/50">
-                            {CROPS.find((c) => c.id === item.cropId)?.en}
-                          </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Realistic Produce Photo */}
+                          <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-white/80 bg-slate-100 shadow-sm group-hover:scale-105 transition-transform duration-200">
+                            <img
+                              src={cropImg.src}
+                              alt={cropName(item.cropId, lang)}
+                              width={56}
+                              height={56}
+                              loading="lazy"
+                              className="size-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="inline-block rounded-full bg-black/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-deep/60">
+                              {item.category.replace("_", " ")}
+                            </span>
+                            <h3 className="mt-0.5 font-display text-lg font-bold text-brand-deep group-hover:text-teal-900 transition-colors truncate">
+                              {cropName(item.cropId, lang)}
+                            </h3>
+                            <p className="text-[11px] text-brand-deep/50 truncate">
+                              {CROPS.find((c) => c.id === item.cropId)?.en}
+                            </p>
+                          </div>
                         </div>
 
                         <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold transition-transform group-hover:scale-105 ${
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold transition-transform group-hover:scale-105 shrink-0 ${
                             isGain
                               ? "bg-emerald-100 text-emerald-800"
                               : isLoss

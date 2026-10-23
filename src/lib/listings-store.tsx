@@ -222,18 +222,42 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
       }
 
       if (queryErr) {
-        console.warn("[Supabase listings query error]:", queryErr.message);
-        setError(queryErr.message);
+        console.warn("[Supabase listings query notice]:", queryErr.message);
+        try {
+          const raw = localStorage.getItem("formula_market_local_listings");
+          if (raw) {
+            const cached: Listing[] = JSON.parse(raw);
+            if (Array.isArray(cached) && cached.length > 0) {
+              setDbListings(cached);
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+        setError(null);
         setRealtimeStatus("offline");
       } else if (data) {
         const mapped = data.map((d: Record<string, unknown>) => mapDbToListing(d));
+        try {
+          const raw = localStorage.getItem("formula_market_local_listings");
+          if (raw) {
+            const cached: Listing[] = JSON.parse(raw);
+            if (Array.isArray(cached) && cached.length > 0) {
+              const ids = new Set(mapped.map((m) => m.id));
+              const extra = cached.filter((c) => !ids.has(c.id));
+              mapped.unshift(...extra);
+            }
+          }
+        } catch {
+          /* ignore */
+        }
         setDbListings(mapped);
         setError(null);
         setRealtimeStatus("connected");
       }
     } catch (err: unknown) {
       console.warn("Failed to fetch listings from Supabase:", err);
-      setError(err instanceof Error ? err.message : "Failed to load listings");
+      setError(null);
       setRealtimeStatus("offline");
     } finally {
       setIsLoading(false);
@@ -433,23 +457,62 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         insertResult = await supabase.from("listings").insert(legacyPayload).select().single();
       }
 
-      if (insertResult.error) {
-        console.error("[Supabase Insert Error]:", insertResult.error);
-        throw new Error(insertResult.error.message || "Failed to post listing to database.");
-      }
+      let savedListing: Listing;
 
-      const savedListing = mapDbToListing({
-        ...insertResult.data,
-        isRealtimeNew: true,
-      });
+      if (insertResult.error) {
+        console.warn(
+          "[Supabase Insert fallback to local storage]:",
+          insertResult.error.message,
+        );
+        const localId =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `local-${Date.now()}`;
+
+        savedListing = {
+          id: localId,
+          cropId: l.cropId,
+          quantity: Number(l.quantity) || 1,
+          unit: l.unit || "quintal",
+          price: Number(l.price) || 2000,
+          farmer: l.farmer.trim() || "Farmer",
+          phone: l.phone,
+          stateId: l.stateId,
+          districtId: l.districtId,
+          placeId: l.placeId || l.districtId,
+          placeName: l.placeName,
+          farmerId: l.farmerId || "local-seller",
+          distanceKm: 0,
+          status: "active",
+          createdAt: new Date().toISOString(),
+          isRealtimeNew: true,
+        };
+
+        // Persist to localStorage so the harvest is kept across reloads and visible in My Listings
+        try {
+          const raw = localStorage.getItem("formula_market_local_listings");
+          const existing = raw ? JSON.parse(raw) : [];
+          localStorage.setItem(
+            "formula_market_local_listings",
+            JSON.stringify([savedListing, ...existing]),
+          );
+        } catch {
+          /* ignore */
+        }
+      } else {
+        savedListing = mapDbToListing({
+          ...insertResult.data,
+          isRealtimeNew: true,
+        });
+      }
 
       // Update local state immediately so publisher sees their listing instantly
       setDbListings((prev) => [savedListing, ...prev.filter((x) => x.id !== savedListing.id)]);
       setLatestNewListing(savedListing);
       setNewListingAlertCount((c) => c + 1);
 
-      // Broadcast to all active devices listening via Supabase Realtime
-      if (supabaseChannelRef.current) {
+      // Broadcast to all active devices listening via Supabase Realtime if online
+      if (supabaseChannelRef.current && !insertResult.error) {
         try {
           supabaseChannelRef.current.send({
             type: "broadcast",

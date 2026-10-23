@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { cropName, useI18n, type CropCategory } from "@/lib/i18n";
 import { formatRupees, formatRupeesPerKg, useLivePrices } from "@/lib/prices";
 import { useRegion } from "@/lib/region-store";
+import { getCropImage } from "@/lib/crop-images";
 import {
   Search,
   SlidersHorizontal,
@@ -215,21 +216,30 @@ export function PriceBoard({ limit }: { limit?: number }) {
             const maxDisplay =
               unitMode === "quintal" ? formatRupees(row.max) : formatRupeesPerKg(row.max);
 
+            const cropImg = getCropImage(row.cropId);
+
             return (
               <div
                 key={row.cropId}
                 className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white/65 p-4 shadow-sm backdrop-blur-xl transition hover:border-brand/40 hover:bg-white/80 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg" aria-hidden="true">
-                      {categoryEmoji}
-                    </span>
-                    <div>
-                      <p className="font-semibold text-brand-deep text-sm leading-snug">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-11 shrink-0 overflow-hidden rounded-xl border border-white/80 bg-slate-100 shadow-2xs group-hover:scale-105 transition-transform duration-200">
+                      <img
+                        src={cropImg.src}
+                        alt={cropName(row.cropId, lang)}
+                        width={44}
+                        height={44}
+                        loading="lazy"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-brand-deep text-sm leading-snug truncate">
                         {cropName(row.cropId, lang)}
                       </p>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-brand-deep/50">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-brand-deep/50 truncate block">
                         {row.category === "vegetable"
                           ? "Vegetable"
                           : row.category === "fruit"

@@ -619,7 +619,9 @@ function SellPage() {
           <div className="mt-6 rounded-2xl border border-emerald-900/10 bg-emerald-50/70 p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-emerald-900/10 pb-3">
               <div className="flex items-center gap-3">
-                <span className="text-4xl">{selectedCropImage.emoji}</span>
+                <div className="size-14 shrink-0 overflow-hidden rounded-2xl border border-emerald-900/15 bg-white shadow-sm">
+                  <img src={selectedCropImage.src} alt="" width={56} height={56} className="size-full object-cover" />
+                </div>
                 <div>
                   <h3 className="font-bold text-emerald-950 text-lg">
                     {cropName(confirmedListing.cropId, lang)}
@@ -761,7 +763,9 @@ function SellPage() {
                         aria-expanded={isCropDropdownOpen}
                       >
                         <div className="flex items-center gap-3 truncate min-w-0">
-                          <span className="text-2xl shrink-0">{selectedCropImage.emoji}</span>
+                          <div className="size-8 shrink-0 overflow-hidden rounded-xl border border-brand/20 bg-slate-100 shadow-2xs">
+                            <img src={selectedCropImage.src} alt="" width={32} height={32} className="size-full object-cover" />
+                          </div>
                           <span className="text-brand-deep font-bold truncate text-base">
                             {cropName(cropId, lang)}
                           </span>
@@ -822,8 +826,10 @@ function SellPage() {
                                           : "hover:bg-brand/10 text-brand-deep"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2 truncate">
-                                        <span className="text-lg">{img.emoji}</span>
+                                      <div className="flex items-center gap-2.5 truncate min-w-0">
+                                        <div className="size-6 shrink-0 overflow-hidden rounded-md border border-white/80 bg-slate-100">
+                                          <img src={img.src} alt="" width={24} height={24} className="size-full object-cover" />
+                                        </div>
                                         <span className="truncate">{cropName(c.id, lang)}</span>
                                       </div>
                                       {isSelected && <Check className="size-4 shrink-0 ml-1" />}
@@ -858,8 +864,10 @@ function SellPage() {
                                           : "hover:bg-brand/10 text-brand-deep"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2 truncate">
-                                        <span className="text-lg">{img.emoji}</span>
+                                      <div className="flex items-center gap-2.5 truncate min-w-0">
+                                        <div className="size-6 shrink-0 overflow-hidden rounded-md border border-white/80 bg-slate-100">
+                                          <img src={img.src} alt="" width={24} height={24} className="size-full object-cover" />
+                                        </div>
                                         <span className="truncate">{cropName(c.id, lang)}</span>
                                       </div>
                                       {isSelected && <Check className="size-4 shrink-0 ml-1" />}
@@ -894,8 +902,10 @@ function SellPage() {
                                           : "hover:bg-brand/10 text-brand-deep"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2 truncate">
-                                        <span className="text-lg">{img.emoji}</span>
+                                      <div className="flex items-center gap-2.5 truncate min-w-0">
+                                        <div className="size-6 shrink-0 overflow-hidden rounded-md border border-white/80 bg-slate-100">
+                                          <img src={img.src} alt="" width={24} height={24} className="size-full object-cover" />
+                                        </div>
                                         <span className="truncate">{cropName(c.id, lang)}</span>
                                       </div>
                                       {isSelected && <Check className="size-4 shrink-0 ml-1" />}
@@ -1393,7 +1403,9 @@ function SellPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="text-4xl">{selectedCropImage.emoji}</span>
+                    <div className="size-12 shrink-0 overflow-hidden rounded-2xl border border-brand/20 bg-slate-100 shadow-2xs">
+                      <img src={selectedCropImage.src} alt="" width={48} height={48} className="size-full object-cover" />
+                    </div>
                     <div>
                       <h3 className="font-bold text-base text-brand-deep">
                         {cropName(cropId, lang)}
@@ -1598,8 +1610,10 @@ function RateCardContent({
         </span>
       </div>
 
-      <div className="mt-3 flex items-center gap-2.5">
-        <span className="text-2xl">{cropImage.emoji}</span>
+      <div className="mt-3 flex items-center gap-3">
+        <div className="size-11 shrink-0 overflow-hidden rounded-xl border border-brand/20 bg-slate-100 shadow-2xs">
+          <img src={cropImage.src} alt="" width={44} height={44} className="size-full object-cover" />
+        </div>
         <div>
           <h4 className="font-bold text-sm text-brand-deep leading-tight">
             {cropName(cropId, lang)}
